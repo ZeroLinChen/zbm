@@ -1,0 +1,93 @@
+.content.data-v-57280228 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+          align-items: center;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+          justify-content: center;
+}
+.demo-warter.data-v-57280228 {
+  border-radius: 8px;
+  margin: 5px;
+  background-color: #ffffff;
+  padding: 8px;
+  position: relative;
+}
+.u-close.data-v-57280228 {
+  position: absolute;
+  top: 32rpx;
+  right: 32rpx;
+}
+.demo-image.data-v-57280228 {
+  width: 100%;
+  border-radius: 4px;
+}
+.demo-title.data-v-57280228 {
+  font-size: 30rpx;
+  margin-top: 5px;
+  color: #303133;
+  word-break: break-all;
+}
+.demo-tag.data-v-57280228 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  margin-top: 5px;
+}
+.demo-tag-owner.data-v-57280228 {
+  background-color: #fa3534;
+  color: #ffffff;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+          align-items: center;
+  padding: 4rpx 14rpx;
+  border-radius: 50rpx;
+  font-size: 20rpx;
+  line-height: 1;
+}
+.demo-tag-text.data-v-57280228 {
+  border: 1px solid #2979ff;
+  color: #2979ff;
+  margin-left: 10px;
+  border-radius: 50rpx;
+  line-height: 1;
+  padding: 4rpx 14rpx;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+          align-items: center;
+  border-radius: 50rpx;
+  font-size: 20rpx;
+}
+.demo-price.data-v-57280228 {
+  font-size: 30rpx;
+  color: #fa3534;
+  margin-top: 5px;
+}
+.demo-shop.data-v-57280228 {
+  font-size: 22rpx;
+  color: #909399;
+  margin-top: 5px;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+}
+.shop-name.data-v-57280228 {
+  margin-left: 5rpx;
+}
+u-sticky.data-v-57280228 {
+  width: 750rpx;
+}
+

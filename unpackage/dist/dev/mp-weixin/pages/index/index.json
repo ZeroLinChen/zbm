@@ -1,0 +1,16 @@
+{
+  "navigationBarTitleText": "uni-app",
+  "usingComponents": {
+    "index-u-waterfall-left": "/pages/index/index-u-waterfall-left",
+    "index-u-waterfall-right": "/pages/index/index-u-waterfall-right",
+    "u-sticky": "/uview-ui/components/u-sticky/u-sticky",
+    "u-search": "/uview-ui/components/u-search/u-search",
+    "u-subsection": "/uview-ui/components/u-subsection/u-subsection",
+    "u-waterfall": "/uview-ui/components/u-waterfall/u-waterfall",
+    "u-lazy-load": "/uview-ui/components/u-lazy-load/u-lazy-load",
+    "u-avatar": "/uview-ui/components/u-avatar/u-avatar",
+    "u-loadmore": "/uview-ui/components/u-loadmore/u-loadmore",
+    "u-tabbar": "/uview-ui/components/u-tabbar/u-tabbar",
+    "u-toast": "/uview-ui/components/u-toast/u-toast"
+  }
+}
