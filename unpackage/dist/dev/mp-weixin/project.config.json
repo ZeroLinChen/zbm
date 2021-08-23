@@ -5,27 +5,25 @@
   },
   "setting": {
     "urlCheck": false,
-    "minified": true
+    "minified": true,
+    "es6": false
   },
   "compileType": "miniprogram",
   "libVersion": "",
   "appid": "wx104030fbe65fd38c",
   "projectname": "zbm_source",
+  "cloudfunctionTemplateRoot": "cloudfunctionTemplate",
   "condition": {
     "search": {
-      "current": -1,
       "list": []
     },
     "conversation": {
-      "current": -1,
       "list": []
     },
     "game": {
-      "current": -1,
       "list": []
     },
     "miniprogram": {
-      "current": -1,
       "list": []
     }
   }

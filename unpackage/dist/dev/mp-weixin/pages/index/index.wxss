@@ -13,12 +13,25 @@
   -webkit-justify-content: center;
           justify-content: center;
 }
+.wrap.data-v-57280228 {
+  width: 750rpx;
+}
+.lists-box.data-v-57280228 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+          flex-wrap: wrap;
+  margin-bottom: 20rpx;
+}
 .demo-warter.data-v-57280228 {
+  width: calc(50% - 20rpx);
   border-radius: 8px;
-  margin: 5px;
+  margin: 10rpx;
   background-color: #ffffff;
-  padding: 8px;
+  padding: 8rpx;
   position: relative;
+  box-sizing: border-box;
 }
 .u-close.data-v-57280228 {
   position: absolute;

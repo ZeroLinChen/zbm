@@ -2,59 +2,33 @@
 	<view class="content">
 		<u-sticky :enable="enable" bgColor="#f2f2f2">
 			<u-search v-model="value" @search="search" :clearabled="true" :show-action="false" shape="0"></u-search>
-			<u-subsection :bold="true" :active-color="subActiveColor" :list="classList" :borderRadius="0"></u-subsection>
+			<u-subsection :bold="true" :active-color="subActiveColor" :list="classList" :borderRadius="0" @change="subChange"></u-subsection>
 		</u-sticky>
 		<view class="wrap">
-			<u-waterfall v-model="flowList" ref="uWaterfall">
-				<template v-slot:left="{ leftList }">
-					<view class="demo-warter" v-for="(item, index) in leftList" :key="index">
-						<!-- 微信小程序需要hx2.8.11版本才支持在template中引入其他组件，比如下方的u-lazy-load组件 -->
-						<u-lazy-load threshold="-450" border-radius="10" :image="item.image" :index="index"></u-lazy-load>
-						<view class="demo-title">{{ item.title }}</view>
-						<view class="demo-price">{{ item.price }}元</view>
-						<view class="demo-tag">
-							<view class="demo-tag-owner">自营</view>
-							<view class="demo-tag-text">放心购</view>
-						</view>
-						<view class="demo-shop">
-							<u-avatar 
-								mode="circle" 
-								size="30" 
-								src="http://pic2.sc.chinaz.com/Files/pic/pic9/202002/hpic2119_s.jpg" 
-								bgColor='#fcbd71'
-							></u-avatar>
-							<view class="shop-name">{{ item.shop }}</view>
-						</view>
-						<!-- <view class="u-close">
-							<u-icon name="close-circle-fill" color="#fa3534" size="34" @click="remove(item.id)"></u-icon>
-						</view> -->
+			<view class="lists-box">
+				<view class="demo-warter" v-for="(item, index) in flowList" :key="index">
+					<u-lazy-load threshold="-450" height="300" img-mode="aspectFill" border-radius="10" :image="imgList[index]" :index="index"></u-lazy-load>
+					<view class="demo-title">{{ item.title }}</view>
+					<view class="demo-price">{{ item.discontCost }}元</view>
+					<view class="demo-tag">
+						<view class="demo-tag-owner">自营</view>
+						<view class="demo-tag-text">放心购</view>
 					</view>
-				</template>
-				<template v-slot:right="{ rightList }">
-					<view class="demo-warter" v-for="(item, index) in rightList" :key="index">
-						<u-lazy-load threshold="-450" border-radius="10" :image="item.image" :index="index"></u-lazy-load>
-						<view class="demo-title">{{ item.title }}</view>
-						<view class="demo-price">{{ item.price }}元</view>
-						<view class="demo-tag">
-							<view class="demo-tag-owner">自营</view>
-							<view class="demo-tag-text">放心购</view>
-						</view>
-						<view class="demo-shop">
-							<u-avatar 
-								mode="circle" 
-								size="30" 
-								src="http://pic2.sc.chinaz.com/Files/pic/pic9/202002/hpic2119_s.jpg" 
-								bgColor='#fcbd71'
-							></u-avatar>
-							<view class="shop-name">{{ item.shop }}</view>
-						</view>
-						<!-- <view class="u-close">
-							<u-icon name="close-circle-fill" color="#fa3534" size="34" @click="remove(item.id)"></u-icon>
-						</view> -->
+					<view class="demo-shop">
+						<u-avatar 
+							mode="circle" 
+							size="30" 
+							:src="item.zbm_avatarUrl"
+							bgColor='#fcbd71'
+						></u-avatar>
+						<view class="shop-name">{{ item.zbm_nickName }}</view>
 					</view>
-				</template>
-			</u-waterfall>
-			<u-loadmore bg-color="rgb(240, 240, 240)" :status="loadStatus" @loadmore="addRandomData"></u-loadmore>
+					<!-- <view class="u-close">
+						<u-icon name="close-circle-fill" color="#fa3534" size="34" @click="remove(item.id)"></u-icon>
+					</view> -->
+				</view>
+			</view>
+			<u-loadmore :status="loadStatus" @loadmore="addRandomData"></u-loadmore>
 		</view>
 		
 		<u-tabbar :list="tabbar" :mid-button="true"></u-tabbar>
@@ -66,115 +40,76 @@
 <script>
 	import tabbarSetting from '../../static/tabbarSetting';
 	import api from '../../common/server/api/index.js'
+	import { utils } from '../../common/utils.js'
 	
 	export default {
 		data() {
 			return {
+				skipStep: 10,
+				skipNumber: 0,
 				loadStatus: 'loadmore',
 				classList: ['全部'],
 				flowList: [],
+				imgList: [], // 微信小程序云开发不能直接获取图片，需要额外数组保存
 				subActiveColor: this.$u.color['primary'],
 				tabbar: tabbarSetting,
-				list: [
-					{
-						price: 35,
-						title: '北国风光，千里冰封，万里雪飘',
-						shop: '李白杜甫白居易旗舰店',
-						image: 'http://pic.sc.chinaz.com/Files/pic/pic9/202002/zzpic23327_s.jpg'
-					},
-					{
-						price: 75,
-						title: '望长城内外，惟余莽莽',
-						shop: '李白杜甫白居易旗舰店',
-						image: 'http://pic.sc.chinaz.com/Files/pic/pic9/202002/zzpic23325_s.jpg'
-					},
-					{
-						price: 385,
-						title: '大河上下，顿失滔滔',
-						shop: '李白杜甫白居易旗舰店',
-						image: 'http://pic2.sc.chinaz.com/Files/pic/pic9/202002/hpic2119_s.jpg'
-					},
-					{
-						price: 784,
-						title: '欲与天公试比高',
-						shop: '李白杜甫白居易旗舰店',
-						image: 'http://pic2.sc.chinaz.com/Files/pic/pic9/202002/zzpic23369_s.jpg'
-					},
-					{
-						price: 7891,
-						title: '须晴日，看红装素裹，分外妖娆',
-						shop: '李白杜甫白居易旗舰店',
-						image: 'http://pic2.sc.chinaz.com/Files/pic/pic9/202002/hpic2130_s.jpg'
-					},
-					{
-						price: 2341,
-						shop: '李白杜甫白居易旗舰店',
-						title: '江山如此多娇，引无数英雄竞折腰',
-						image: 'http://pic1.sc.chinaz.com/Files/pic/pic9/202002/zzpic23346_s.jpg'
-					},
-					{
-						price: 661,
-						shop: '李白杜甫白居易旗舰店',
-						title: '惜秦皇汉武，略输文采',
-						image: 'http://pic1.sc.chinaz.com/Files/pic/pic9/202002/zzpic23344_s.jpg'
-					},
-					{
-						price: 1654,
-						title: '唐宗宋祖，稍逊风骚',
-						shop: '李白杜甫白居易旗舰店',
-						image: 'http://pic1.sc.chinaz.com/Files/pic/pic9/202002/zzpic23343_s.jpg'
-					},
-					{
-						price: 1678,
-						title: '一代天骄，成吉思汗',
-						shop: '李白杜甫白居易旗舰店',
-						image: 'http://pic1.sc.chinaz.com/Files/pic/pic9/202002/zzpic23343_s.jpg'
-					},
-					{
-						price: 924,
-						title: '只识弯弓射大雕',
-						shop: '李白杜甫白居易旗舰店',
-						image: 'http://pic1.sc.chinaz.com/Files/pic/pic9/202002/zzpic23343_s.jpg'
-					},
-					{
-						price: 8243,
-						title: '俱往矣，数风流人物，还看今朝',
-						shop: '李白杜甫白居易旗舰店',
-						image: 'http://pic1.sc.chinaz.com/Files/pic/pic9/202002/zzpic23343_s.jpg'
-					}
-				]
+				currentSub: 0,
+				currentRules: { // 保存当前规则，当变化时清空列表及初始化skipNumber
+					class: '',
+					keyword: '',
+				}
 			};
 		},
 		onLoad() {
-			this.addRandomData();
+			this.skipNumber -= this.skipStep;
+			console.log(this.skipNumber)
 			this.getClasses();
+			this.getLists();
 		},
 		onReachBottom() {
 			this.loadStatus = 'loading';
-			// 模拟数据加载
-			setTimeout(() => {
-				this.addRandomData();
-				this.loadStatus = 'loadmore';
-			}, 1000);
+			this.getLists();
 		},
 		methods: {
 			getClasses() { // 获取分类数据
 				api.getClasses().then((res) => {
 					const o_list = this.classList;
 					const list = res.data.data.map(item => item.label);
+					getApp().globalData.classList = list;
 					this.classList = this.classList.concat(list);
 				}).catch((e) => {
 					this.showToast(e, 'error')
 				})
 			},
-			addRandomData() {
-				for (let i = 0; i < 10; i++) {
-					let index = this.$u.random(0, this.list.length - 1);
-					// 先转成字符串再转成对象，避免数组对象引用导致数据混乱
-					let item = JSON.parse(JSON.stringify(this.list[index]));
-					item.id = this.$u.guid();
-					this.flowList.push(item);
-				}
+			getLists(data = {}) { // 获取物品列表数据
+				let reset = false;
+				Object.keys(this.currentRules).forEach(item => {
+					if (data[item] !== this.currentRules[item]) {
+						this.skipNumber = 0 - this.skipStep;
+						this.flowList = [];
+						this.imgList = [];
+					}
+				})
+			
+				this.skipNumber = this.skipNumber + this.skipStep;
+				Object.assign(data, { skip: this.skipNumber})
+				api.getLists(data).then((res) => {
+					this.flowList.push(...res.data.data);
+					this.getImg(res.data.data.map(item => item.firstImg)).then(imgList => {
+						this.imgList.push(...imgList);
+					});
+					
+					(res.data.data.length === 0 || (res.data.data.length < this.skipStep)) 
+						? (this.loadStatus = 'nomore') 
+						: (this.loadStatus = 'loading');
+				}).catch((e) => {
+					this.showToast(e, 'error')
+				})
+			},
+			async getImg(url) {
+				const res = await utils.getWxImg(url);
+				console.log(res);
+				return res;
 			},
 			showToast(msg, type, back = false, url = '') {
 				this.$refs.uToast.show({
@@ -182,17 +117,12 @@
 					type: type,
 				})
 			},
-			remove(id) {
-				this.$refs.uWaterfall.remove(id);
-			},
-			clear() {
-				this.$refs.uWaterfall.clear();
+			subChange(e) {
+				this.currentSub = e;
+				this.getLists({ class: e - 1 });
 			},
 			search(value) {
-				this.$refs.uToast.show({
-					title: '搜索内容为：' + value,
-					type: 'success'
-				})
+				this.getLists({ keyword: value, class: this.currentSub - 1});
 			},
 		}
 	}
@@ -205,22 +135,31 @@
 		align-items: center;
 		justify-content: center;
 	}
+	
+	.wrap {
+		width: 750rpx;
+	}
+	
+	.lists-box {
+		display: flex;
+		flex-wrap: wrap;
+		margin-bottom: 20rpx;
+	}
 
 	.demo-warter {
+		width: calc(50% - 20rpx);
 		border-radius: 8px;
-		margin: 5px;
+		margin: 10rpx;
 		background-color: #ffffff;
-		padding: 8px;
+		padding: 8rpx;
 		position: relative;
+		box-sizing: border-box;
 	}
 	
 	.u-close {
 		position: absolute;
 		top: 32rpx;
 		right: 32rpx;
-	}
-	
-	.demo-img-wrap {
 	}
 	
 	.demo-image {

@@ -2,7 +2,7 @@
 	<view class="wrap">
 		<u-form :model="model" :rules="rules" ref="uForm" :errorType="errorType">
 			<u-form-item label="上传图片" prop="photo" label-width="150">
-				<u-upload width="160" height="160"></u-upload>
+				<u-upload :beforeUpload="beforeUpload" width="160" height="160"></u-upload>
 			</u-form-item>
 			<u-form-item label="标题" prop="title" label-width="150">
 				<u-input :border="border" placeholder="请输入姓名" v-model="model.name" type="text"></u-input>
@@ -89,6 +89,7 @@
 
 <script>
 	import tabbarSetting from '../../static/tabbarSetting';
+	import { utils } from '../../common/utils.js'
 	
 	export default {
 		data() {
@@ -116,20 +117,7 @@
 						disabled: false
 					}
 				],
-				selectList: [
-					{
-						value: '电子产品',
-						label: '电子产品'
-					},
-					{
-						value: '服装',
-						label: '服装'
-					},
-					{
-						value: '工艺品',
-						label: '工艺品'
-					}
-				],
+				selectList: [],
 				selectShow: false,
 				showAgreement: false,
 				rules: {
@@ -193,14 +181,24 @@
 			}
 		},
 		onLoad() {
-			
+			this.selectList = getApp().globalData.classList.map((item, index) => {
+				return {value: index, label: item}
+			})
 		},
 		methods: {
+			beforeUpload(e, list) {
+				utils.uploadWxFiles({path: `${e}.png`, url: list[e].url}, (res) => {
+					console.log(res.fileID)
+				}, (err) => {
+					
+				})
+				return false;
+			},
 			submit() {
 				this.$refs.uForm.validate(valid => {
 					if (valid) {
 						if(!this.model.agreement) return this.$u.toast('请勾选协议');
-						console.log('验证通过');
+						console.log(this.model)
 					} else {
 						console.log('验证失败');
 					}
