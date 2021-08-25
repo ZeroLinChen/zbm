@@ -52,7 +52,7 @@
 		>
 			<view class="agreement-content">
 				<view class="agreement-title">周边卖用户发布协议</view>
-				<view class="agreement-sub-title">您应确保您通过咸鱼二手小程序提交、发布的全部信息（包括但不限于个人信息、商品信息、言论及所作出的行为等）不包含以下内容，否则平台有权对您的账户进行处理。因此导致第三方用户或咸鱼二手小程序平台损失的，您应承担全部赔偿责任。</br></view>
+				<view class="agreement-sub-title">您应确保您通过周边卖小程序提交、发布的全部信息（包括但不限于个人信息、商品信息、言论及所作出的行为等）不包含以下内容，否则平台有权对您的账户进行处理。因此导致第三方用户或周边卖小程序平台损失的，您应承担全部赔偿责任。</br></view>
 				<view class="agreement-main-body">					
 					<view>（1）违反国家法律法规、破坏国家统一、煽动民族仇恨、民族歧视、破坏民族团结的；</view>
 					<view>（2）损害国家机关信誉、进行政治宣传或破坏国家宗教政策的；</view>
@@ -60,7 +60,7 @@
 					<view>（4）侮辱、诽谤、恐吓、散播涉及他人隐私等侵害他人合法权益的；</view>
 					<view>（5）捏造、歪曲或掩盖事实，从事欺诈、虚假、不准确或误导性行为，扰乱社会秩序、平台交易秩序的；</view>
 					<view>（6）侵犯他人知识产权或涉及第三方商业秘密及其他专有权利的；</view>
-					<view>（7）存在可能破坏、篡改、删除、影响咸鱼二手小程序任何系统正常运行或未经授权秘密获取咸鱼二手小程序及其他用户的数据、个人资料的病毒、木马、爬虫等恶意软件、程序代码的；</view>
+					<view>（7）存在可能破坏、篡改、删除、影响周边卖小程序任何系统正常运行或未经授权秘密获取周边卖小程序及其他用户的数据、个人资料的病毒、木马、爬虫等恶意软件、程序代码的；</view>
 					<view>（8）其他违背社会公共利益或公共道德的。</view>
 				</view>
 				<view class="agreement-sub-title">用户行为规范</view>
@@ -96,7 +96,7 @@
 			</view>
 		</u-mask>
 		
-		<u-modal v-model="uploadComplate" content="上传完成，返回首页" @confirm="uploadComplateFn"></u-modal>
+		<u-modal v-model="uploadComplate" :show-title="false" content="上传完成，返回首页" @confirm="uploadComplateFn"></u-modal>
 		
 		<u-toast ref="uToast" />
 	</view>

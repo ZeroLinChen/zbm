@@ -34,6 +34,12 @@
 		<u-tabbar :list="tabbar" :mid-button="true"></u-tabbar>
 		
 		<u-toast ref="uToast" />
+		
+		<u-popup v-model="loginPopup" :safe-area-inset-bottom="true" :mask-close-able="false" :border-radius="10" mode="bottom">
+			<view class="loginBtn">
+				<u-button type="primary" @click="getUserInfo">登录周边卖</u-button>
+			</view>
+		</u-popup>
 	</view>
 </template>
 
@@ -57,10 +63,18 @@
 				currentRules: { // 保存当前规则，当变化时清空列表及初始化skipNumber
 					class: '',
 					keyword: '',
-				}
+				},
+				userInfo: {},
+				loginPopup: false,
 			};
 		},
 		onLoad() {
+			const id = uni.getStorageSync('userInfo')
+			if (id) {
+				this.createUser()
+			} else {
+				this.loginPopup = true
+			}
 			this.skipNumber -= this.skipStep;
 			// console.log(this.skipNumber)
 			this.getClasses();
@@ -84,7 +98,7 @@
 			},
 			getLists(data = {}) { // 获取物品列表数据
 				let reset = false;
-				Object.keys(this.currentRules).forEach(item => {
+				['class', 'keyword'].forEach(item => { // 当数组中的两个字段改变时，清空列表
 					if (data[item] !== this.currentRules[item]) {
 						this.skipNumber = 0 - this.skipStep;
 						this.flowList = [];
@@ -129,6 +143,32 @@
 					url: `../detail/index?id=${id}`
 				})
 			},
+			getUserInfo() {
+				const that = this
+				wx.getUserProfile({
+				    desc: '用于完善会员资料', 
+				    success(res) {
+				        that.userInfo = res.userInfo,
+						that.createUser(that.userInfo)
+				    },
+				    fail() {
+						that.showToast("获取用户信息失败！", 'error')
+				    }
+				})
+			},
+			createUser(data) {
+				api.createUser(data).then(res => {
+					if (res.success) {
+						this.loginPopup = false
+						uni.setStorageSync('userInfo', res.data.data)
+					} else {
+						this.showToast("获取用户信息失败！", 'error')
+					}
+				}).catch(err => {
+					this.showToast("获取用户信息失败！", 'error')
+					this.loginPopup = true
+				})
+			}
 		}
 	}
 </script>
@@ -227,5 +267,9 @@
 	
 	u-sticky {
 		width: 750rpx;
+	}
+	
+	.loginBtn {
+		padding: 100rpx 120rpx;
 	}
 </style>
