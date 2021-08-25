@@ -1,7 +1,8 @@
 const maxTime = 10; // 请求最大等待时间（秒）
 
 wx.cloud.init()
-function http(api, method, data = {}) {
+// cloudID获取微信小程序开放数据
+function http(api, method, data = {}, cloudID) {
 	let res = new Promise((res, rej) => {
 		try{
 			setTimeout(() => {
@@ -12,7 +13,8 @@ function http(api, method, data = {}) {
 				data: {
 					type: method,
 					data,
-				}
+					cloudData: cloudID ? cloudID : '',
+				},
 			}).then((resp) => {
 				res(resp.result)
 			})

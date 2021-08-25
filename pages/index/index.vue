@@ -1,19 +1,19 @@
 <template>
 	<view class="content">
-		<u-sticky :enable="enable" bgColor="#f2f2f2">
+		<u-sticky bgColor="#f2f2f2">
 			<u-search v-model="value" @search="search" :clearabled="true" :show-action="false" shape="0"></u-search>
 			<u-subsection :bold="true" :active-color="subActiveColor" :list="classList" :borderRadius="0" @change="subChange"></u-subsection>
 		</u-sticky>
 		<view class="wrap">
 			<view class="lists-box">
-				<view class="demo-warter" v-for="(item, index) in flowList" :key="index">
-					<u-lazy-load threshold="-450" height="300" img-mode="aspectFill" border-radius="10" :image="imgList[index]" :index="index"></u-lazy-load>
+				<view class="demo-warter" v-for="(item, index) in flowList" :key="index" @click="showDetail(item._id)">
+					<u-lazy-load threshold="-450" height="300" loading-img="/static/img/bitmap.png" img-mode="aspectFill" border-radius="10" :image="imgList[index]" :index="index"></u-lazy-load>
 					<view class="demo-title">{{ item.title }}</view>
 					<view class="demo-price">{{ item.discontCost }}元</view>
-					<view class="demo-tag">
+<!-- 					<view class="demo-tag">
 						<view class="demo-tag-owner">自营</view>
 						<view class="demo-tag-text">放心购</view>
-					</view>
+					</view> -->
 					<view class="demo-shop">
 						<u-avatar 
 							mode="circle" 
@@ -62,13 +62,14 @@
 		},
 		onLoad() {
 			this.skipNumber -= this.skipStep;
-			console.log(this.skipNumber)
+			// console.log(this.skipNumber)
 			this.getClasses();
 			this.getLists();
 		},
 		onReachBottom() {
+			if (this.loadStatus === 'nomore') return
 			this.loadStatus = 'loading';
-			this.getLists();
+			this.getLists(this.currentRules);
 		},
 		methods: {
 			getClasses() { // 获取分类数据
@@ -108,7 +109,6 @@
 			},
 			async getImg(url) {
 				const res = await utils.getWxImg(url);
-				console.log(res);
 				return res;
 			},
 			showToast(msg, type, back = false, url = '') {
@@ -123,6 +123,11 @@
 			},
 			search(value) {
 				this.getLists({ keyword: value, class: this.currentSub - 1});
+			},
+			showDetail(id) {
+				uni.navigateTo({
+					url: `../detail/index?id=${id}`
+				})
 			},
 		}
 	}

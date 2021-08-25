@@ -1,28 +1,33 @@
 <template>
 	<view class="wrap">
-		<u-form :model="model" :rules="rules" ref="uForm" :errorType="errorType">
+		<u-form :model="model" :rules="rules" ref="uForm" :errorType="['message']">
 			<u-form-item label="上传图片" prop="photo" label-width="150">
 				<u-upload :beforeUpload="beforeUpload" width="160" height="160"></u-upload>
 			</u-form-item>
 			<u-form-item label="标题" prop="title" label-width="150">
-				<u-input :border="border" placeholder="请输入姓名" v-model="model.name" type="text"></u-input>
+				<u-input placeholder="请输入标题" v-model="model.title" type="text"></u-input>
 			</u-form-item>
 			<u-form-item label="简介" prop="intro" label-width="150">
-				<u-input type="textarea" :border="border" placeholder="请填写简介" v-model="model.intro" />
+				<u-input type="textarea" placeholder="描述你的宝贝,如品牌、规格、成色、购买渠道、转手原因等" v-model="model.intro" />
 			</u-form-item>
-			<u-form-item label="物品类型" prop="goodsType" label-width="150">
-				<u-input :border="border" type="select" :select-open="selectShow" v-model="model.goodsType" placeholder="请选择物品类型" @click="selectShow = true"></u-input>
+			<u-form-item label="物品类型" prop="classText" label-width="150">
+				<u-input type="select" :select-open="selectShow" v-model="model.classText" placeholder="请选择物品类型" @click="selectShow = true"></u-input>
 			</u-form-item>
 			<u-form-item label="交接方式" prop="tradeType" label-width="150">
 				<u-radio-group v-model="model.tradeType" @change="radioGroupChange">
-					<u-radio shape="square" v-for="(item, index) in tradeTypeList" :key="index" :name="item.name">{{ item.name }}</u-radio>
+					<u-radio shape="square" v-for="(item, index) in tradeTypeList" :key="index" :name="item.value">{{ item.name }}</u-radio>
 				</u-radio-group>
 			</u-form-item>
 			<u-form-item label="原价" prop="originalCost" label-width="150">
-				<u-input :border="border" placeholder="请输入物品原价" v-model="model.originalCost" type="text"></u-input>
+				<u-input placeholder="请输入物品原价" v-model="model.originalCost" type="text"></u-input>
 			</u-form-item>
 			<u-form-item label="想卖" prop="discontCost" label-width="150">
-				<u-input :border="border" placeholder="请输入想要卖出的价格" v-model="model.discontCost" type="text"></u-input>
+				<u-input placeholder="请输入想要卖出的价格" v-model="model.discontCost" type="text"></u-input>
+			</u-form-item>
+			<!-- 联系方式组 -->
+			<u-divider :half-width="0" :height="100" bg-color="#fafafa" type="info">联系方式</u-divider>
+			<u-form-item label="微信号" prop="wx_account" label-width="150">
+				<u-input placeholder="请输入微信号" v-model="model.wx_account" type="text"></u-input>
 			</u-form-item>
 		</u-form>
 		<view class="agreement">
@@ -33,7 +38,7 @@
 				<view class="agreement-text">（滚动至底部关闭）</view>
 			</view>
 		</view>
-		<u-button @click="submit">提交</u-button>
+		<u-button type="primary" open-type="getPhoneNumber" @getphonenumber="submit">提交</u-button>
 		
 		<u-popup
 			border-radius="10"
@@ -84,35 +89,50 @@
 		<u-select mode="single-column" :list="selectList" v-model="selectShow" @confirm="selectConfirm"></u-select>
 		
 		<u-tabbar :list="tabbar" :mid-button="true"></u-tabbar>
+		
+		<u-mask :show="showLoading" :mask-click-able="false">
+			<view class="flex-center">
+				<u-loading :show="true"></u-loading>
+			</view>
+		</u-mask>
+		
+		<u-modal v-model="uploadComplate" content="上传完成，返回首页" @confirm="uploadComplateFn"></u-modal>
+		
+		<u-toast ref="uToast" />
 	</view>
 </template>
 
 <script>
 	import tabbarSetting from '../../static/tabbarSetting';
+	import api from '../../common/server/api/index.js'
 	import { utils } from '../../common/utils.js'
 	
 	export default {
 		data() {
 			return {
 				model: {
-					photo: '',
+					photo: [],
 					title: '',
 					intro: '',
-					tradeType: '自提',
+					tradeType: 0,
 					agreement: false,
-					goodsType: '',
+					class: '',
+					classText: '',
 					originalCost: 0,
-					discontCost: 0
+					discontCost: 0,
+					wx_account: ''
 				},
-				photo: '',
+				photo: [],
 				tradeTypeList: [
 					{
 						name: '自提',
+						value: 0,
 						checked: true,
 						disabled: false
 					},
 					{
 						name: '邮寄',
+						value: 1,
 						checked: false,
 						disabled: false
 					}
@@ -121,26 +141,22 @@
 				selectShow: false,
 				showAgreement: false,
 				rules: {
-					name: [
+					photo: [
 						{
 							required: true,
-							message: '请输入姓名',
+							message: '请上传最少一张图片',
+						}
+					],
+					title: [
+						{
+							required: true,
+							message: '请输入标题',
 							trigger: 'blur' ,
 						},
 						{
 							min: 3,
-							max: 5,
-							message: '姓名长度在3到5个字符',
-							trigger: ['change','blur'],
-						},
-						{
-							// 此为同步验证，可以直接返回true或者false，如果是异步验证，稍微不同，见下方说明
-							validator: (rule, value, callback) => {
-								// 调用uView自带的js验证规则，详见：https://www.uviewui.com/js/test.html
-								return this.$u.test.chinese(value);
-							},
-							message: '姓名必须为中文',
-							// 触发器可以同时用blur和change，二者之间用英文逗号隔开
+							max: 15,
+							message: '标题长度在3到15个字符',
 							trigger: ['change','blur'],
 						},
 					],
@@ -155,51 +171,77 @@
 							trigger: 'change' ,
 						},
 					],
-					payType: [
-						{
-							required: true,
-							message: '请选择任意一种支付方式',
-							trigger: 'change',
-						}
-					],
-					tradeType: [
-						{
-							required: true,
-							message: '请选择交接方式',
-							trigger: 'change',
-						}
-					],
-					goodsType: [
+					classText: [
 						{
 							required: true,
 							message: '请选择物品类型',
 							trigger: 'change',
 						}
+					],
+					discontCost: [
+						{
+							required: true,
+							message: '请填写价格',
+							trigger: 'change',
+						}
+					],
+					wx_account: [
+						{
+							required: true,
+							message: '请填写微信账号',
+							trigger: 'change',
+						}
 					]
 				},
 				tabbar: tabbarSetting,
+				showLoading: false,
+				uploadComplate: false,
 			}
 		},
 		onLoad() {
 			this.selectList = getApp().globalData.classList.map((item, index) => {
 				return {value: index, label: item}
 			})
+			// this.selectList = [
+			// 	{
+			// 		label: "数码",
+			// 		value: 0
+			// 	},
+			// 	{
+			// 		label: "数码1",
+			// 		value: 1
+			// 	},
+			// 	{
+			// 		label: "数码2",
+			// 		value: 2
+			// 	},
+			// ]
+			console.log(this.selectList)
+		},
+		onReady() {
+			this.$refs.uForm.setRules(this.rules);
 		},
 		methods: {
 			beforeUpload(e, list) {
-				utils.uploadWxFiles({path: `${e}.png`, url: list[e].url}, (res) => {
+				this.showLoading = true;
+				utils.uploadWxFiles({path: `userFiles/${this.$u.guid(20)}.png`, url: list[e].url}, (res) => {
+					this.model.photo.push(res.fileID)
 					console.log(res.fileID)
+					this.showLoading = false;
 				}, (err) => {
-					
+					this.showLoading = false;
 				})
 				return false;
 			},
-			submit() {
+			submit(e) {
 				this.$refs.uForm.validate(valid => {
 					if (valid) {
 						if(!this.model.agreement) return this.$u.toast('请勾选协议');
-						console.log(this.model)
+						// console.log(this.model)
+						
+						this.createList(this.model, wx.cloud.CloudID(e.detail.cloudID));
 					} else {
+						console.log(this.model)
 						console.log('验证失败');
 					}
 				});
@@ -210,14 +252,50 @@
 			},
 			// 选择商品类型回调
 			selectConfirm(e) {
-				this.model.goodsType = '';
+				this.classText = '';
 				e.map((val, index) => {
-					this.model.goodsType += this.model.goodsType == '' ? val.label : '-' + val.label;
+					this.model.classText = val.label;
+					this.model.class = val.value;
 				})
 			},
 			// 勾选版权协议
 			checkboxChange(e) {
 				this.model.agreement = e.value;
+			},
+			getPhoneNum(e) {
+				api.getPhoneNum(e.detail.cloudID).then(res => {
+					console.log(res)
+				}).catch(e => {
+					console.log(e)
+				})
+			},
+			createList(data, cloudID) { // 上传接口
+				data = { ...data }
+				this.showLoading = true;
+				delete data.classText
+				delete data.agreement
+				api.createList(data, cloudID).then((res) => {
+					this.showLoading = false;
+					if (res.success) {
+						this.uploadComplate = true;
+					} else {
+						his.showToast(res.errorMsg, 'error')
+					}
+				}).catch((e) => {
+					this.showLoading = false;
+					this.showToast(e, 'error')
+				})
+			},
+			uploadComplateFn() {
+				uni.switchTab({
+					url: '../index/index',
+				})
+			},
+			showToast(msg, type, back = false, url = '') {
+				this.$refs.uToast.show({
+					title: msg,
+					type: type,
+				})
 			},
 		}
 	}
@@ -273,5 +351,12 @@
 		align-items: center;
 		justify-content: center;
 	}
+}
+
+.flex-center{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
 }
 </style>

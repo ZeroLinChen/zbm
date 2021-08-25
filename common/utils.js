@@ -27,6 +27,7 @@ export default class Utils {
 			})
 		})
 	}
+	
 	uploadWxFiles({path, url}, success, fail) {
 		wx.cloud.uploadFile({
 		  cloudPath: path,
@@ -39,6 +40,16 @@ export default class Utils {
 		    fail.call(null, err)
 		  }
 		})
+	}
+	
+	transfTradeType(num) {
+		if (num === 0) {
+			return '自提'
+		}
+		
+		if (num === 1) {
+			return '邮寄'
+		}
 	}
 }
 

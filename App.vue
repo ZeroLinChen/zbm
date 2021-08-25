@@ -1,7 +1,8 @@
 <script>
 	export default {
 		globalData: {
-			classList: []
+			classList: [],
+			followList: [],
 		},
 		onLaunch: function() {
 			console.log('App Launch')

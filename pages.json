@@ -6,8 +6,11 @@
 		{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "uni-app"
+				"navigationBarTitleText": "周边卖"
 			}
+		},
+		{
+			"path": "pages/detail/index"
 		},
 		{
 			"path": "pages/publish/index",
