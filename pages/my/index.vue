@@ -27,7 +27,7 @@
 				<u-cell-item icon="photo" title="相册"></u-cell-item>
 				<u-cell-item icon="coupon" title="卡券"></u-cell-item> -->
 				<u-cell-item icon="plus" title="发布" @click="showDetail('myPost')"></u-cell-item>
-				<u-cell-item icon="heart" title="关注"></u-cell-item>
+				<u-cell-item icon="heart" title="关注" @click="showDetail('myFollow')"></u-cell-item>
 			</u-cell-group>
 		</view>
 		
@@ -64,6 +64,7 @@
 		onShow() {
 			const id = uni.getStorageSync('userInfo')
 			if (id) {
+				this.createUser()
 				this.userInfo = uni.getStorageSync('userInfo')
 			} else {
 				this.loginPopup = true
@@ -97,7 +98,6 @@
 				})
 			},
 			showDetail(page) {
-				console.log(`../${page}/index`)
 				uni.navigateTo({
 					url: `../${page}/index`
 				})

@@ -1,7 +1,8 @@
 <template>
 	<view class="wrap">
+		<u-top-tips ref="uTips"></u-top-tips>
 		<u-form :model="model" :rules="rules" ref="uForm" :errorType="['message']">
-			<u-form-item label="上传图片" prop="photo" label-width="150">
+			<u-form-item v-if="!id" label="上传图片" prop="photo" label-width="150">
 				<u-upload ref="uUpload" :beforeUpload="beforeUpload" width="160" height="160"></u-upload>
 			</u-form-item>
 			<u-form-item label="标题" prop="title" label-width="150">
@@ -197,9 +198,11 @@
 				tabbar: tabbarSetting,
 				showLoading: false,
 				uploadComplate: false,
+				id: '',
 			}
 		},
 		onLoad(option) {
+			this.id = option.id
 			this.selectList = getApp().globalData.classList.map((item, index) => {
 				return {value: index, label: item}
 			})
@@ -209,14 +212,17 @@
 		},
 		onReady() {
 			this.$refs.uForm.setRules(this.rules);
+			this.$refs.uTips.show({
+				title: '暂不支持图片修改，如需修改图片，请重新发布',
+				type: 'error',
+				duration: '2300'
+			})
 		},
 		methods: {
 			beforeUpload(e, list) {
 				this.showLoading = true;
 				utils.uploadWxFiles({path: `userFiles/${this.$u.guid(20)}.png`, url: list[e].url}, (res) => {
 					this.model.photo.push(res.fileID)
-					console.log(res.fileID)
-					console.log(this.$refs.uUpload.lists)
 					this.showLoading = false;
 				}, (err) => {
 					this.showLoading = false;
@@ -280,11 +286,13 @@
 				this.showLoading = true
 				api.getListDetail(id)
 					.then(async (res) => {
-						this.model = res.data.data
-						this.photoList = await this.getImg(this.info.photo)
-						this.photoList.forEach(item => {
-							this.$refs.uUpload.lists.url = item
-						})
+						Object.assign(this.model, res.data.data)
+						this.selectConfirm([this.selectList[res.data.data.class]]) // 返回值不存在classText，手动触发select回调
+						// this.model = res.data.data
+						// this.photoList = await this.getImg(this.info.photo)
+						// this.photoList.forEach(item => {
+						// 	this.$refs.uUpload.lists.url = item
+						// })
 						// files = this.$refs.uUpload.lists.;
 					})
 					.catch(e => {

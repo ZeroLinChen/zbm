@@ -8,9 +8,9 @@
 					<view class="time">{{ $u.timeFrom(new Date(info.last_modify_time), 'yyyy年mm月dd日 hh时MM分') }}</view>
 				</view>
 				<view class="hot">
-					<u-icon name="eye" size="28" :color="$u.color.primary" :label="info.visitors" />
+					<u-icon name="eye" size="28" label-size="24" :color="$u.color.primary" :label="`浏览数: ${info.visitors}`" />
 					<view class="gap"></view>
-					<u-icon name="heart" size="28" :color="$u.color.error" :label="info.collectors" />
+					<u-icon name="heart" size="28" label-size="24" :color="$u.color.error" :label="`关注数: ${info.collectors}`" />
 				</view>
 			</view>
 			<u-line />
@@ -28,7 +28,15 @@
 			<u-image v-for="(item, index) in photoList" :src="item" :key="index" width="100%" mode="widthFix"></u-image>
 		</view>
 		
-		<view class="bottomArea">
+		<view class="bottomArea flex-end" v-if="isCreator">
+			<view class="bottom-tips">编辑前需下架宝贝</view>
+			<view class="buttom-group">
+				<u-button v-if="status === 1" :ripple="true" ripple-bg-color="#909399" type="success" size="medium" @click="changeStatus(id, 2)">下架</u-button>
+				<u-button v-else-if="status === 2" :ripple="true" ripple-bg-color="#909399" type="primary" size="medium" @click="edit">编辑</u-button>
+				<u-button :ripple="true" ripple-bg-color="#909399" type="error" size="medium" @click="changeStatus(id, 0)">关闭</u-button>
+			</view>
+		</view>
+		<view class="bottomArea" v-else>
 			<u-icon v-show="isFollow" name="heart-fill" color="#dd6161" size="48" @click="removeFollow(id)"></u-icon>
 			<u-icon v-show="!isFollow" name="heart" :color="$u.color['info']" size="48" @click="addFollow(id)"></u-icon>
 			<view class="buttom-group">
@@ -37,12 +45,61 @@
 			</view>
 		</view>
 		
-		<u-modal v-model="copyComplate" :show-title="false" @confirm="uploadComplateFn">
+		<u-modal v-model="copyComplate" :show-title="false">
 			<view class="tips">
 				<view>未收到货时,请勿提前转账,防止被骗子骗取钱财!!!</view>
 				<view>{{tips}}</view>
 			</view>
 		</u-modal>
+		
+		<u-mask :show="showLoading" :mask-click-able="false">
+			<view class="flex-center">
+				<u-loading :show="true"></u-loading>
+			</view>
+		</u-mask>
+		
+		<view class="msg-box">
+			<u-gap height="10" bg-color="#fafafa"></u-gap>
+			<view class="title">
+				<u-icon name="chat" size="56" margin-left="15" label="消息"></u-icon>
+			</view>
+			<view class="msg-main">
+				<view class="input-area">
+					<u-input v-model="msg" type="text" :height="76" :border="true" :placeholder="toWho.zbm_nickName ? `@${toWho.zbm_nickName}` : '向宝贝主咨询'"/>
+					<u-button type="primary">回复</u-button>
+				</view>
+				
+				<u-line />
+				
+				<view class="msg-list">
+					<view class="msg" v-for="(item, index) in info.msg" :key="index">
+						<u-avatar
+							mode="circle"
+							size="60"
+							:src="item.zbm_avatarUrl"
+							bgColor='#fcbd71'
+						></u-avatar>
+						<view class="msg-leave">
+							<view class="msg-content">
+								<view class="msg-user-name" @click="reply(item, index)">{{item.zbm_nickName}}:</view>
+								{{item.msgContent}}
+							</view>
+							<view class="msg-time">{{$u.timeFrom(new Date(item.time), 'yyyy年mm月dd日 hh时MM分')}}</view>
+						</view>
+						<view class="msg-reply" v-if="item.reply">
+							<u-line />
+							<view v-for="(replyItem, replyIndex) in item.reply" :key="replyIndex">
+								<view class="msg-content">
+									<view class="msg-user-name" @click="reply(replyItem, index)">@{{replyItem.zbm_nickName}}:</view>
+									{{replyItem.msgContent}}
+								</view>
+								<view class="msg-time">{{$u.timeFrom(new Date(replyItem.time), 'yyyy年mm月dd日 hh时MM分')}}</view>
+							</view>
+						</view>
+					</view>
+				</view>
+			</view>
+		</view>
 		
 		<view class="backHome">
 			<u-icon name="/static/img/tabbar/home-a.png" size="48" @click="backHome"></u-icon>
@@ -66,6 +123,15 @@
 				copyComplate: false,
 				tips: '',
 				userInfo: '',
+				isCreator: false,
+				showLoading: false,
+				msg: '',
+				toWho: {},
+			}
+		},
+		computed:{
+			status() {
+				return this.info.status
 			}
 		},
 		onLoad(option) {
@@ -75,23 +141,38 @@
 			this.userInfo = uni.getStorageSync('userInfo')
 			this.checkFollow(this.id)
 		},
+		watch: {
+			msg(newValue, oldValue) {
+				if (newValue) {
+					this.toWho = {};
+				}
+			}
+		},
 		methods: {
 			getListDetail(id) {
+				this.showLoading = true
 				api.getListDetail(id)
 					.then(async (res) => {
-						console.log(res)
 						this.info = res.data.data
+						this.checkIsCreator(res.data.data.creatorId)
 						this.photoList = await this.getImg(this.info.photo)
-						console.log(this.photoList)
 					})
 					.catch(e => {
 						
 					})
+					.finally(() => {
+						this.showLoading = false
+					})
 			},
-			checkFollow(id) {
-				console.log(id, this.userInfo.zbm_follow_lists)
+			checkFollow(id) { // 检查是否在关注列表内
+				// console.log(id, this.userInfo.zbm_follow_lists)
 				if (this.userInfo.zbm_follow_lists.includes(id)) {
 					this.isFollow = true
+				}
+			},
+			checkIsCreator(id) { // 检查是否是创建者
+				if (id === this.userInfo._id) {
+					this.isCreator = true
 				}
 			},
 			addFollow(id) {
@@ -111,7 +192,7 @@
 			},
 			removeFollow(id) {
 				this.$u.throttle(() => {
-					api.remove({id})
+					api.removeFollow({id})
 						.then(res => {
 							if (res.success) {
 								const index = getApp().globalData.followList.indexOf(this.info._id)
@@ -124,6 +205,16 @@
 							this.$u.toast(e);
 						})
 				}, 800, true)
+			},
+			changeStatus(id, status) {
+				this.showLoading = true
+				api.changeStatus({id, status}).then(res => {
+					this.info.status = status
+					this.$u.toast(utils.transfStatus(status));
+				})
+				.finally(() => {
+					this.showLoading = false
+				})
 			},
 			copyPhone(value, type = 'phone') {
 				uni.setClipboardData({
@@ -145,6 +236,15 @@
 				uni.switchTab({
 					url: '../index/index',
 				})
+			},
+			edit() {
+				uni.navigateTo({
+				    url: `../edit/index?id=${this.id}`,
+				});
+			},
+			reply(item, index) { // 控制向谁回复消息
+				item.index = index
+				this.toWho = item;
 			}
 		}
 	}
@@ -156,6 +256,7 @@
 		height: 100vh;
 		background-color: #FFFFFF;
 		padding: 0 20rpx;
+		padding-bottom: 100rpx;
 	}
 	
 	.intor {
@@ -221,9 +322,7 @@
 		}
 	}
 	
-	.main {
-		padding-bottom: 100rpx;
-		
+	.main {		
 		u-image {
 			padding: 0 30rpx 30rpx;
 			display: flex;
@@ -244,13 +343,19 @@
 		bottom: 0;
 		left: 0;
 		width: 750rpx;
-		height: 100rpx;
+		height: calc(100rpx + var(--safe-area-inset-bottom));
 		padding: 0 20rpx;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		background-color: #FFFFFF;
 		box-shadow: 0 -2rpx 4rpx 2rpx rgba(0, 0, 0, 0.6);
+		padding-bottom: var(--safe-area-inset-bottom);
+		
+		.bottom-tips {
+			color: $u-tips-color;
+			margin-right: auto;
+		}
 	}
 	
 	.buttom-group {
@@ -271,8 +376,95 @@
 		}
 	}
 	
+	.flex-end {
+		justify-content: flex-end;
+	}
+	
 	.tips {
 		padding: 30rpx;
 		line-height: 2;
+	}
+	
+	.flex-center{
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+	}
+	
+	.msg-list {
+		padding: 20rpx;
+	}
+	
+	.msg-box {
+		margin: 0 -20rpx;
+		padding-bottom: 100rpx;
+		
+		.title {
+			width: 100%;
+			padding: 20rpx;
+			display: flex;
+			justify-content: flex-start;
+			align-items: center;
+		}
+		
+		.input-area {
+			width: 100%;
+			padding: 20rpx;
+			display: flex;
+			justify-content: flex-start;
+			align-items: center;
+			
+			u-input {
+				flex: 1;
+			}
+			
+			/deep/ .u-input {
+				background-color: #fafafa;
+				border-top-right-radius: 0!important;
+				border-bottom-right-radius: 0!important;;
+			}
+			
+			/deep/ button {
+				border-top-left-radius: 0;
+				border-bottom-left-radius: 0;
+			}
+		}
+		
+		.msg {
+			display: flex;
+			flex-wrap: wrap;
+			
+			> view {
+				padding-left: 20rpx;
+				
+				.msg-leave {
+					height: 30rpx;
+				}
+				
+				.msg-content {
+					display: flex;
+					align-items: center;
+					
+					.msg-user-name {
+						padding-right: 10rpx;
+						color: $u-type-primary-dark;
+					}
+				}
+				
+				.msg-time {
+					color: $u-tips-color;
+				}
+			}
+						
+			.msg-reply {
+				width: 100%;
+				padding: 10rpx;
+				margin-top: 10rpx;
+				margin-left: 80rpx;
+				border-radius: 6rpx;
+				background-color: $u-bg-color;
+			}
+		}
 	}
 </style>

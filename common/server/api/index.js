@@ -7,7 +7,10 @@ const api = {
 	createList: (data, cloudID) => http('listsFunctions', 'createList', data, cloudID),
 	getListDetail: (data) => http('listsFunctions', 'getListDetail', data),
 	addFollow: (data) => http('usersFunctions', 'addFollow', data),
+	removeFollow: (data) => http('usersFunctions', 'removeFollow', data),
 	getPhoneNumber: (data) => http('usersFunctions', 'getPhoneNum', data),
+	changeStatus: (data) => http('listsFunctions', 'changeStatus', data),
+	leaveMsg: (data) => http('listsFunctions', 'leaveMsg', data),
 }
 
 export default api;

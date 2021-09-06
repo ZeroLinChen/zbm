@@ -51,6 +51,11 @@ export default class Utils {
 			return '邮寄'
 		}
 	}
+	
+	transfStatus(num) {
+		const dict = ['关闭', '上架', '下架']
+		return dict[num]
+	}
 }
 
 export const utils = new Utils();

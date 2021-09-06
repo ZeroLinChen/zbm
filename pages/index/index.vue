@@ -2,7 +2,8 @@
 	<view class="content">
 		<u-sticky bgColor="#f2f2f2">
 			<u-search v-model="value" @search="search" :clearabled="true" :show-action="false" shape="0"></u-search>
-			<u-subsection :bold="true" :active-color="subActiveColor" :list="classList" :borderRadius="0" @change="subChange"></u-subsection>
+			<!-- <u-subsection :bold="true" :active-color="subActiveColor" :list="classList" :borderRadius="0" @change="subChange"></u-subsection> -->
+			<u-tabs ref="tabs" :current="currentTab" :list="classList"  @change="tabChange"></u-tabs>
 		</u-sticky>
 		<view class="wrap">
 			<view class="lists-box">
@@ -31,7 +32,7 @@
 			<u-loadmore :status="loadStatus" @loadmore="addRandomData"></u-loadmore>
 		</view>
 		
-		<u-tabbar :list="tabbar" :mid-button="true"></u-tabbar>
+		<u-tabbar :list="tabbar" :mid-button="true" iconSize="48"></u-tabbar>
 		
 		<u-toast ref="uToast" />
 		
@@ -54,12 +55,12 @@
 				skipStep: 10,
 				skipNumber: 0,
 				loadStatus: 'loadmore',
-				classList: ['全部'],
+				classList: [{name: '全部'}],
 				flowList: [],
 				imgList: [], // 微信小程序云开发不能直接获取图片，需要额外数组保存
 				subActiveColor: this.$u.color['primary'],
 				tabbar: tabbarSetting,
-				currentSub: 0,
+				currentTab: 0,
 				currentRules: { // 保存当前规则，当变化时清空列表及初始化skipNumber
 					class: '',
 					keyword: '',
@@ -89,9 +90,10 @@
 			getClasses() { // 获取分类数据
 				api.getClasses().then((res) => {
 					const o_list = this.classList;
-					const list = res.data.data.map(item => item.label);
+					const list = res.data.data.map(item => {return {name: item.label}});
 					getApp().globalData.classList = list;
 					this.classList = this.classList.concat(list);
+					console.log(this.classList)
 				}).catch((e) => {
 					this.showToast(e, 'error')
 				})
@@ -131,12 +133,12 @@
 					type: type,
 				})
 			},
-			subChange(e) {
-				this.currentSub = e;
+			tabChange(e) {
+				this.currentTab = e;
 				this.getLists({ class: e - 1 });
 			},
 			search(value) {
-				this.getLists({ keyword: value, class: this.currentSub - 1});
+				this.getLists({ keyword: value, class: this.currentTab - 1});
 			},
 			showDetail(id) {
 				uni.navigateTo({

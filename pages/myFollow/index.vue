@@ -52,12 +52,12 @@
 		onLoad() {
 			this.userInfo = uni.getStorageSync('userInfo')
 			this.skipNumber -= this.skipStep // 初始化分页字段
-			this.getLists({creatorId: this.userInfo._id, status: -1})
+			this.getLists({followList: [...this.userInfo.zbm_follow_lists], status: -1})
 		},
 		onReachBottom() {
 			if (this.loadStatus === 'nomore') return
 			this.loadStatus = 'loading';
-			this.getLists({creatorId: this.userInfo._id, status: -1});
+			this.getLists({followList: [...this.userInfo.zbm_follow_lists], status: -1});
 		},
 		methods: {
 			getLists(data = {}) { // 获取物品列表数据

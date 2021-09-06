@@ -10,12 +10,21 @@
 			}
 		},
 		{
-			"path": "pages/detail/index"
+			"path": "pages/detail/index",
+			"style": {
+				"navigationBarTitleText": "宝贝详情"
+			}
 		},
 		{
 			"path": "pages/publish/index",
 			"style": {
 				"navigationBarTitleText": "发布"
+			}
+		},
+		{
+			"path": "pages/edit/index",
+			"style": {
+				"navigationBarTitleText": "编辑"
 			}
 		},
 		{
@@ -28,6 +37,12 @@
 			"path": "pages/myPost/index",
 			"style": {
 				"navigationBarTitleText": "我的发布"
+			}
+		},
+		{
+			"path": "pages/myFollow/index",
+			"style": {
+				"navigationBarTitleText": "我的关注"
 			}
 		}
 	],
