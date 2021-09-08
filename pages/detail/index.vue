@@ -66,36 +66,37 @@
 			<view class="msg-main">
 				<view class="input-area">
 					<u-input v-model="msg" type="text" :height="76" :border="true" :placeholder="toWho.zbm_nickName ? `@${toWho.zbm_nickName}` : '向宝贝主咨询'"/>
-					<u-button type="primary">回复</u-button>
+					<u-button type="primary" @click="sendMsg(msg, toWho)">回复</u-button>
 				</view>
 				
 				<u-line />
 				
 				<view class="msg-list">
-					<view class="msg" v-for="(item, index) in info.msg" :key="index">
-						<u-avatar
-							mode="circle"
-							size="60"
-							:src="item.zbm_avatarUrl"
-							bgColor='#fcbd71'
-						></u-avatar>
-						<view class="msg-leave">
-							<view class="msg-content">
-								<view class="msg-user-name" @click="reply(item, index)">{{item.zbm_nickName}}:</view>
-								{{item.msgContent}}
-							</view>
-							<view class="msg-time">{{$u.timeFrom(new Date(item.time), 'yyyy年mm月dd日 hh时MM分')}}</view>
-						</view>
-						<view class="msg-reply" v-if="item.reply">
-							<u-line />
-							<view v-for="(replyItem, replyIndex) in item.reply" :key="replyIndex">
+					<view class="msg" v-for="(item, index) in msgList" :key="index">
+						<template>
+							<u-avatar
+								mode="circle"
+								size="60"
+								:src="item.zbm_avatarUrl"
+								bgColor='#fcbd71'
+							></u-avatar>
+							<view class="msg-leave">
 								<view class="msg-content">
-									<view class="msg-user-name" @click="reply(replyItem, index)">@{{replyItem.zbm_nickName}}:</view>
-									{{replyItem.msgContent}}
+									<view class="msg-user-name" @click="reply(item, index)">{{item.zbm_nickName}}:</view>
+									{{item.msgContent}}
 								</view>
-								<view class="msg-time">{{$u.timeFrom(new Date(replyItem.time), 'yyyy年mm月dd日 hh时MM分')}}</view>
+								<view class="msg-time">{{$u.timeFrom(new Date(item.time), 'yyyy年mm月dd日 hh时MM分')}}</view>
 							</view>
-						</view>
+							<view class="msg-reply" v-if="item.reply">
+								<view v-for="(replyItem, replyIndex) in item.reply" :key="replyIndex">
+									<view class="msg-content">
+										<view class="msg-user-name">@{{replyItem.zbm_nickName}}:</view>
+										{{replyItem.msgContent}}
+									</view>
+									<view class="msg-time">{{$u.timeFrom(new Date(replyItem.time), 'yyyy年mm月dd日 hh时MM分')}}</view>
+								</view>
+							</view>
+						</template>
 					</view>
 				</view>
 			</view>
@@ -126,6 +127,8 @@
 				isCreator: false,
 				showLoading: false,
 				msg: '',
+				msgList: [],
+				replyList: [],
 				toWho: {},
 			}
 		},
@@ -143,7 +146,7 @@
 		},
 		watch: {
 			msg(newValue, oldValue) {
-				if (newValue) {
+				if (!newValue) {
 					this.toWho = {};
 				}
 			}
@@ -155,6 +158,7 @@
 					.then(async (res) => {
 						this.info = res.data.data
 						this.checkIsCreator(res.data.data.creatorId)
+						this.dealMsg(this.info.msg)
 						this.photoList = await this.getImg(this.info.photo)
 					})
 					.catch(e => {
@@ -242,9 +246,51 @@
 				    url: `../edit/index?id=${this.id}`,
 				});
 			},
+			dealMsg(msgList) {
+				const batArr = [];
+				const replyList = {};
+				msgList.forEach((item, index) => {
+					if (item.replyTo) {
+						replyList[item.replyTo.id] || (replyList[item.replyTo.id] = []);
+						replyList[item.replyTo.id].push(item);
+					} else {
+						if (replyList[item.id]) {
+							item.reply || (item.reply = []);
+							item.reply.push(...replyList[item.id]);
+						}
+						batArr.push(item)
+					}
+				})
+				this.msgList = batArr;
+			},
 			reply(item, index) { // 控制向谁回复消息
-				item.index = index
-				this.toWho = item;
+				item.index = String(index);
+				const { id, userId, zbm_nickName } = item;
+				this.toWho = { id, userId, zbm_nickName };
+			},
+			sendMsg(msgContent, replyTo) {
+				this.showLoading = true;
+				api.sendMsg({
+					listId: this.info._id,
+					userId: this.userInfo._id,
+					zbm_nickName: this.userInfo.zbm_nickName,
+					zbm_avatarUrl: this.userInfo.zbm_avatarUrl,
+					replyTo: replyTo.id ? {
+						id: replyTo.id,
+						userId: replyTo.userId,
+					} : '',
+					msgContent
+				}).then(res => {
+					this.msg = '';
+					this.toWho = {};
+				})
+				.finally(() => {
+					this.showLoading = false;
+					this.getListDetail({id: this.id});
+				})
+			},
+			isReply(item) {
+				return typeof item.replyIndex !== 'string'
 			}
 		}
 	}
@@ -351,6 +397,7 @@
 		background-color: #FFFFFF;
 		box-shadow: 0 -2rpx 4rpx 2rpx rgba(0, 0, 0, 0.6);
 		padding-bottom: var(--safe-area-inset-bottom);
+		z-index: 1000;
 		
 		.bottom-tips {
 			color: $u-tips-color;
@@ -434,6 +481,7 @@
 		.msg {
 			display: flex;
 			flex-wrap: wrap;
+			margin-bottom: 10rpx;
 			
 			> view {
 				padding-left: 20rpx;
@@ -464,6 +512,10 @@
 				margin-left: 80rpx;
 				border-radius: 6rpx;
 				background-color: $u-bg-color;
+				
+				> view {
+					margin-bottom: 10rpx;
+				}
 			}
 		}
 	}

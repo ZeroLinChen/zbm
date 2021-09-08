@@ -10,7 +10,7 @@ const api = {
 	removeFollow: (data) => http('usersFunctions', 'removeFollow', data),
 	getPhoneNumber: (data) => http('usersFunctions', 'getPhoneNum', data),
 	changeStatus: (data) => http('listsFunctions', 'changeStatus', data),
-	leaveMsg: (data) => http('listsFunctions', 'leaveMsg', data),
+	sendMsg: (data) => http('listsFunctions', 'leaveMsg', data),
 }
 
 export default api;
