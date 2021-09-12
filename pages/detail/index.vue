@@ -64,15 +64,17 @@
 				<u-icon name="chat" size="56" margin-left="15" label="消息"></u-icon>
 			</view>
 			<view class="msg-main">
-				<view class="input-area">
-					<u-input v-model="msg" type="text" :height="76" :border="true" :placeholder="toWho.zbm_nickName ? `@${toWho.zbm_nickName}` : '向宝贝主咨询'"/>
-					<u-button type="primary" @click="sendMsg(msg, toWho)">回复</u-button>
-				</view>
+				<u-sticky bgColor="#ffffff">
+					<view class="input-area">
+						<u-input v-model="msg" type="text" :height="76" :focus="msgInputFocus" :border="true" :placeholder="toWho.zbm_nickName ? `@${toWho.zbm_nickName}` : '向宝贝主咨询'"/>
+						<u-button type="primary" @click="sendMsg(msg, toWho)">回复</u-button>
+					</view>
+				</u-sticky>
 				
 				<u-line />
 				
 				<view class="msg-list">
-					<view class="msg" v-for="(item, index) in msgList" :key="index">
+					<view class="msg" v-for="(item, index) in msgList" :key="index"  @click="reply(item, index)">
 						<template>
 							<u-avatar
 								mode="circle"
@@ -82,7 +84,7 @@
 							></u-avatar>
 							<view class="msg-leave">
 								<view class="msg-content">
-									<view class="msg-user-name" @click="reply(item, index)">{{item.zbm_nickName}}:</view>
+									<view class="msg-user-name">{{item.zbm_nickName}}:</view>
 									{{item.msgContent}}
 								</view>
 								<view class="msg-time">{{$u.timeFrom(new Date(item.time), 'yyyy年mm月dd日 hh时MM分')}}</view>
@@ -130,6 +132,8 @@
 				msgList: [],
 				replyList: [],
 				toWho: {},
+				msgInputFocus: false,
+				msgReplyToName: '', // msg消息中展示@***： 
 			}
 		},
 		computed:{
@@ -148,6 +152,12 @@
 			msg(newValue, oldValue) {
 				if (!newValue) {
 					this.toWho = {};
+				}
+				
+				const baseWord = this.msgReplyToName.substr(0, this.msgReplyToName.length-1)
+				if (newValue === baseWord) {
+					this.toWho = {};
+					this.msg = '';
 				}
 			}
 		},
@@ -250,7 +260,7 @@
 				const batArr = [];
 				const replyList = {};
 				msgList.forEach((item, index) => {
-					if (item.replyTo) {
+					if (item.replyTo && item.replyTo.id) {
 						replyList[item.replyTo.id] || (replyList[item.replyTo.id] = []);
 						replyList[item.replyTo.id].push(item);
 					} else {
@@ -261,28 +271,49 @@
 						batArr.push(item)
 					}
 				})
+				// console.log(batArr)
 				this.msgList = batArr;
 			},
 			reply(item, index) { // 控制向谁回复消息
 				item.index = String(index);
 				const { id, userId, zbm_nickName } = item;
 				this.toWho = { id, userId, zbm_nickName };
+				this.msgInputFocus = true;
+				this.msgReplyToName = `@${zbm_nickName}:`
+				this.msg = this.msgReplyToName
 			},
-			sendMsg(msgContent, replyTo) {
+			async sendMsg(msgContent, replyTo) {
+				msgContent = msgContent.substr(this.msgReplyToName.length)
+				if (!msgContent) return
+				
+				const _tmplIds = ['eLkfAr1W10_S15az01H0w7lkzv5S8PyxugmOEyEq274'];
+				const subscribeRes = await utils.wxGetSubscribeAuthorize(_tmplIds);
+				// console.log(await utils.wxGetSubscribeAuthorize(['eLkfAr1W10_S15az01H0w7lkzv5S8PyxugmOEyEq274']))
+				
 				this.showLoading = true;
 				api.sendMsg({
 					listId: this.info._id,
+					listTitle: this.info.title,
 					userId: this.userInfo._id,
 					zbm_nickName: this.userInfo.zbm_nickName,
 					zbm_avatarUrl: this.userInfo.zbm_avatarUrl,
-					replyTo: replyTo.id ? {
+					replyTo: {
 						id: replyTo.id,
-						userId: replyTo.userId,
-					} : '',
+						userId: replyTo.userId ? replyTo.userId : this.info.creatorId
+					},
 					msgContent
-				}).then(res => {
+				}).then(async (res) => {
 					this.msg = '';
 					this.toWho = {};
+					if (subscribeRes.errMsg === 'requestSubscribeMessage:ok') {
+						if (subscribeRes[_tmplIds] === 'accept') {
+							this.$u.toast('订阅回复消息成功，回复消息将会通过微信助手通知您');
+						} else if (subscribeRes[_tmplIds] === 'reject') {
+							this.$u.toast('您取消了回复消息订阅，可能无法及时将回复消息通知到您');
+						} else if (subscribeRes[_tmplIds] === 'ban') {
+							this.$u.toast('您取消了回复消息订阅，可能无法及时将回复消息通知到您');
+						}
+					}					
 				})
 				.finally(() => {
 					this.showLoading = false;
@@ -299,10 +330,9 @@
 <style scoped lang="scss">
 	.content {
 		width: 750rpx;
-		height: 100vh;
 		background-color: #FFFFFF;
 		padding: 0 20rpx;
-		padding-bottom: 100rpx;
+		padding-bottom: calc(100rpx + var(--safe-area-inset-bottom));
 	}
 	
 	.intor {
@@ -445,7 +475,6 @@
 	
 	.msg-box {
 		margin: 0 -20rpx;
-		padding-bottom: 100rpx;
 		
 		.title {
 			width: 100%;

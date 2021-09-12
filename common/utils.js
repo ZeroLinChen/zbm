@@ -1,4 +1,5 @@
 export default class Utils {
+	// 获取微信小程序云开发图片
 	getWxImg(url) {
 		return new Promise((resolve, reject) => {
 			const o_url = url;
@@ -28,6 +29,7 @@ export default class Utils {
 		})
 	}
 	
+	// 微信小程序云开发图片上传
 	uploadWxFiles({path, url}, success, fail) {
 		wx.cloud.uploadFile({
 		  cloudPath: path,
@@ -39,6 +41,18 @@ export default class Utils {
 		  fail: err => {
 		    fail.call(null, err)
 		  }
+		})
+	}
+	
+	// 微信小程序获取订阅授权（一次性）
+	wxGetSubscribeAuthorize(tmplIds) {
+		return new Promise((resolve, reject) => {
+			wx.requestSubscribeMessage({tmplIds})
+				.then(res => {
+					resolve(res)
+				}).catch(err => {
+					reject(err)
+				})
 		})
 	}
 	
