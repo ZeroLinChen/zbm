@@ -279,11 +279,11 @@
 				const { id, userId, zbm_nickName } = item;
 				this.toWho = { id, userId, zbm_nickName };
 				this.msgInputFocus = true;
-				this.msgReplyToName = `@${zbm_nickName}:`
-				this.msg = this.msgReplyToName
+				// this.msgReplyToName = `@${zbm_nickName}:`
+				// this.msg = this.msgReplyToName
 			},
 			async sendMsg(msgContent, replyTo) {
-				msgContent = msgContent.substr(this.msgReplyToName.length)
+				// msgContent = msgContent.substr(this.msgReplyToName.length)
 				if (!msgContent) return
 				
 				const _tmplIds = ['eLkfAr1W10_S15az01H0w7lkzv5S8PyxugmOEyEq274'];
