@@ -28,6 +28,9 @@
 				<u-cell-item icon="coupon" title="卡券"></u-cell-item> -->
 				<u-cell-item icon="plus" title="发布" @click="showDetail('myPost')"></u-cell-item>
 				<u-cell-item icon="heart" title="关注" @click="showDetail('myFollow')"></u-cell-item>
+				<u-cell-item icon="bell" title="置顶" :arrow="false">
+					可用时长: {{}}<u-button solt="right-icon" type="primary" size="mini" :ripple="true">充值</u-button>
+				</u-cell-item>
 			</u-cell-group>
 		</view>
 		
