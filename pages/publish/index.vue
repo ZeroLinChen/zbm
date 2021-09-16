@@ -201,7 +201,7 @@
 		},
 		onLoad(option) {
 			this.selectList = getApp().globalData.classList.map((item, index) => {
-				return {value: index, label: item}
+				return {value: index, label: item.name}
 			})
 			if (option.id) {
 				this.getListDetail(option)
@@ -268,6 +268,18 @@
 					this.showLoading = false;
 					if (res.success) {
 						this.uploadComplate = true;
+						this.model = {
+							photo: [],
+							title: '',
+							intro: '',
+							tradeType: 0,
+							agreement: false,
+							class: '',
+							classText: '',
+							originalCost: 0,
+							discontCost: 0,
+							wx_account: ''
+						}
 					} else {
 						his.showToast(res.errorMsg, 'error')
 					}

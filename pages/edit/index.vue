@@ -204,7 +204,7 @@
 		onLoad(option) {
 			this.id = option.id
 			this.selectList = getApp().globalData.classList.map((item, index) => {
-				return {value: index, label: item}
+				return {value: index, label: item.name}
 			})
 			if (option.id) {
 				this.getListDetail(option)

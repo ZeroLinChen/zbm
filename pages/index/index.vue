@@ -32,7 +32,7 @@
 			<u-loadmore :status="loadStatus" @loadmore="addRandomData"></u-loadmore>
 		</view>
 		
-		<u-tabbar :list="tabbar" :mid-button="true" iconSize="48"></u-tabbar>
+		<u-tabbar :list="tabbar" :mid-button="true"></u-tabbar>
 		
 		<u-toast ref="uToast" />
 		

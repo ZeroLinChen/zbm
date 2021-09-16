@@ -31,8 +31,14 @@
 		<view class="bottomArea flex-end" v-if="isCreator">
 			<view class="bottom-tips">编辑前需下架宝贝</view>
 			<view class="buttom-group">
+				<!-- 置顶 操作按钮 -->
+				<u-button v-if="info.setTop" :ripple="true" ripple-bg-color="#909399" type="success" size="medium" @click="changeStatus(id, 2)">取消置顶</u-button>
+				<u-button v-else :ripple="true" ripple-bg-color="#909399" type="primary" size="medium" @click="edit" :disabled="userInfo.setTopTime === 0">置顶</u-button>
+				<!-- 置顶 操作按钮 end-->
+				<!-- 下架or编辑 操作按钮 -->
 				<u-button v-if="status === 1" :ripple="true" ripple-bg-color="#909399" type="success" size="medium" @click="changeStatus(id, 2)">下架</u-button>
 				<u-button v-else-if="status === 2" :ripple="true" ripple-bg-color="#909399" type="primary" size="medium" @click="edit">编辑</u-button>
+				<!-- 下架or编辑 操作按钮 end-->
 				<u-button :ripple="true" ripple-bg-color="#909399" type="error" size="medium" @click="changeStatus(id, 0)">关闭</u-button>
 			</view>
 		</view>
@@ -134,6 +140,7 @@
 				toWho: {},
 				msgInputFocus: false,
 				msgReplyToName: '', // msg消息中展示@***： 
+				setTopBox: false, // 置顶时间操作区
 			}
 		},
 		computed:{
@@ -322,6 +329,9 @@
 			},
 			isReply(item) {
 				return typeof item.replyIndex !== 'string'
+			},
+			setTop() {
+				this.setTopBox = true;
 			}
 		}
 	}

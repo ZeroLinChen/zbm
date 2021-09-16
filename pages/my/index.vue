@@ -28,8 +28,20 @@
 				<u-cell-item icon="coupon" title="卡券"></u-cell-item> -->
 				<u-cell-item icon="plus" title="发布" @click="showDetail('myPost')"></u-cell-item>
 				<u-cell-item icon="heart" title="关注" @click="showDetail('myFollow')"></u-cell-item>
-				<u-cell-item icon="bell" title="置顶" :arrow="false">
-					可用时长: {{}}<u-button solt="right-icon" type="primary" size="mini" :ripple="true">充值</u-button>
+				<u-cell-item icon="bell" title="置顶">
+					可用时长: 
+					<span class="setTopTime">
+						<u-count-to 
+							ref="conutNum"
+							:start-val="countStart"
+							:end-val="countEnd"
+							:color="countFontColor"
+							:bold="true"
+							:autoplay="false"
+							:duration="1000"
+						/>
+					</span>分钟
+					<u-button solt="right-icon" type="primary" size="mini" :ripple="true" @click.stop="recharge">充值</u-button>
 				</u-cell-item>
 			</u-cell-group>
 		</view>
@@ -49,6 +61,33 @@
 				<u-button type="primary" @click="getUserInfo">登录周边卖</u-button>
 			</view>
 		</u-popup>
+		
+		<u-modal v-model="showModal" :show-title="false" :negative-top="300" confirm-text="取消">
+			<view class="rechargeOption">
+				<view class="remaining">
+					我的剩余时长：<span class="setTopTime">{{userInfo.setTopTime}}</span>分钟
+				</view>
+				
+				<u-grid :col="2">
+					<u-grid-item @click="goPay(1)">
+						<view class="totalFee">充1元</view>
+						<view class="totalTime">2小时</view>
+					</u-grid-item>
+					<u-grid-item>
+						<view class="totalFee">充10元</view>
+						<view class="totalTime">24小时</view>
+					</u-grid-item>
+					<u-grid-item>
+						<view class="totalFee">充50元</view>
+						<view class="totalTime">144小时</view>
+					</u-grid-item>
+					<u-grid-item>
+						<view class="totalFee">充100元</view>
+						<view class="totalTime">312小时</view>
+					</u-grid-item>
+				</u-grid>
+			</view>
+		</u-modal>
 	</view>
 </template>
 
@@ -62,13 +101,23 @@
 			return {
 				userInfo: {},
 				tabbar: tabbarSetting,
+				showModal: false,
+				countFontColor: this.$u.color['primary'],
+				countStart: 0,
+				countEnd: 0,
 			}
+		},
+		watch: {
+			userInfo(nv, ov) {
+				this.countStart = ov.setTopTime;
+				this.countEnd = nv.setTopTime;
+				this.$refs.conutNum.start();
+			},
 		},
 		onShow() {
 			const id = uni.getStorageSync('userInfo')
 			if (id) {
 				this.createUser()
-				this.userInfo = uni.getStorageSync('userInfo')
 			} else {
 				this.loginPopup = true
 			}
@@ -79,8 +128,7 @@
 				wx.getUserProfile({
 				    desc: '用于完善会员资料', 
 				    success(res) {
-				        that.userInfo = res.userInfo,
-						that.createUser(that.userInfo)
+						that.createUser(res.userInfo)
 				    },
 				    fail() {
 						that.showToast("获取用户信息失败！", 'error')
@@ -91,6 +139,7 @@
 				api.createUser(data).then(res => {
 					if (res.success) {
 						this.loginPopup = false
+						this.userInfo = Object.assign({}, res.data.data)
 						uni.setStorageSync('userInfo', res.data.data)
 					} else {
 						this.showToast("获取用户信息失败！", 'error')
@@ -105,6 +154,33 @@
 					url: `../${page}/index`
 				})
 			},
+			recharge() {
+				this.showModal = true;
+			},
+			goPay(totalFee) {
+				api.goPay({
+					body: `购买置顶时长${totalFee/100}元`,
+					totalFee
+				})
+				.then(res => {
+					const payment = res.payment
+					wx.requestPayment({
+						...payment,
+					})
+					.then(res2 => {
+						console.log(res2)
+						this.$u.toast('支付成功！');
+						this.createUser();
+					})
+					.catch(err2 => {
+						console.log(err2)
+						this.$u.toast('支付失败，请重试');
+					})
+					.finally(() => {
+						this.showModal = false;
+					})
+				})
+			}
 		}
 	}
 </script>
@@ -123,8 +199,33 @@
 }
 
 .loginBtn {
-		padding: 100rpx 120rpx;
-	}
+	padding: 100rpx 120rpx;
+}
+
+u-button {
+	margin: 0 30rpx;
+}
+
+.setTopTime {
+	padding: 10rpx;
+	color: $u-type-primary;
+}
+
+.remaining {
+	padding: 20rpx;
+	color: $u-tips-color;
+}
+
+.totalFee {
+	font-size: 36rpx;
+	font-weight: bold;
+}
+
+.totalTime {
+	padding-top: 10rpx;
+	font-size: 24rpx;
+	color: $u-type-warning;
+}
 </style>
 <style>
 	page{
