@@ -11,6 +11,7 @@ const api = {
 	getPhoneNumber: (data) => http('usersFunctions', 'getPhoneNum', data),
 	changeStatus: (data) => http('listsFunctions', 'changeStatus', data),
 	sendMsg: (data) => http('listsFunctions', 'leaveMsg', data),
+	setTop: (data) => http('listsFunctions', 'setTop', data),
 	goPay: (data) => http('wxPay', '', data),
 }
 

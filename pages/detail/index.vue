@@ -32,8 +32,8 @@
 			<view class="bottom-tips">编辑前需下架宝贝</view>
 			<view class="buttom-group">
 				<!-- 置顶 操作按钮 -->
-				<u-button v-if="info.setTop" :ripple="true" ripple-bg-color="#909399" type="success" size="medium" @click="changeStatus(id, 2)">取消置顶</u-button>
-				<u-button v-else :ripple="true" ripple-bg-color="#909399" type="primary" size="medium" @click="edit" :disabled="userInfo.setTopTime === 0">置顶</u-button>
+				<u-button v-if="info.setTop" :ripple="true" ripple-bg-color="#909399" type="success" size="medium" @click="setTop(-1)">取消置顶</u-button>
+				<u-button v-else :ripple="true" ripple-bg-color="#909399" type="primary" size="medium" @click="setTopBox = true" :disabled="userInfo.setTopTime === 0">置顶</u-button>
 				<!-- 置顶 操作按钮 end-->
 				<!-- 下架or编辑 操作按钮 -->
 				<u-button v-if="status === 1" :ripple="true" ripple-bg-color="#909399" type="success" size="medium" @click="changeStatus(id, 2)">下架</u-button>
@@ -113,6 +113,15 @@
 		<view class="backHome">
 			<u-icon name="/static/img/tabbar/home-a.png" size="48" @click="backHome"></u-icon>
 		</view>
+		
+		<u-modal v-model="setTopBox" title="置顶时长设置" :show-cancel-button="true" @confirm="setTop(setTopTime)">
+			<view class="remaining">
+				我的剩余时长：<span class="setTopTime">{{userInfo.setTopTime - setTopTime}}</span>分钟（最短设置时间为60分钟）
+			</view>
+			<view class="setTopBox">
+				<u-number-box v-model="setTopTime" :step="60" :input-width="200" :input-height="80" :min="0" :max="userInfo.setTopTime"></u-number-box>
+			</view>
+		</u-modal>
 	</view>
 </template>
 
@@ -141,6 +150,7 @@
 				msgInputFocus: false,
 				msgReplyToName: '', // msg消息中展示@***： 
 				setTopBox: false, // 置顶时间操作区
+				setTopTime: 0,
 			}
 		},
 		computed:{
@@ -330,8 +340,18 @@
 			isReply(item) {
 				return typeof item.replyIndex !== 'string'
 			},
-			setTop() {
-				this.setTopBox = true;
+			setTop(setTopTime) {
+				api.setTop({
+					userId: this.info.creatorId,
+					id: this.id,
+					setTopTime,
+				}).then(res => {
+						this.userInfo.setTopTime -= setTopTime
+						this.$u.toast('置顶成功，您的宝贝现在会在首页列表前排展示');
+					})
+					.catch(err => {
+						this.$u.toast(err);
+					})
 			}
 		}
 	}
@@ -556,6 +576,24 @@
 					margin-bottom: 10rpx;
 				}
 			}
+		}
+	}
+	
+	.setTopBox {
+		padding: 20rpx;
+		margin-bottom: 20rpx;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	
+	.remaining {
+		padding: 20rpx;
+		color: $u-tips-color;
+		
+		.setTopTime {
+			padding: 10rpx;
+			color: $u-type-primary;
 		}
 	}
 </style>

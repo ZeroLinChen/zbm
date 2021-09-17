@@ -16,7 +16,11 @@ function http(api, method, data = {}, cloudID) {
 					cloudData: cloudID ? cloudID : '',
 				},
 			}).then((resp) => {
-				res(resp.result)
+				if (resp.result.success) {
+					res(resp.result)
+				} else {
+					rej(resp.result.errMsg)
+				}
 			})
 		}catch(e){
 			rej(e)

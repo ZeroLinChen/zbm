@@ -69,19 +69,19 @@
 				</view>
 				
 				<u-grid :col="2">
-					<u-grid-item @click="goPay(1)">
+					<u-grid-item @click="goPay(100)">
 						<view class="totalFee">充1元</view>
 						<view class="totalTime">2小时</view>
 					</u-grid-item>
-					<u-grid-item>
+					<u-grid-item @click="goPay(1000)">
 						<view class="totalFee">充10元</view>
 						<view class="totalTime">24小时</view>
 					</u-grid-item>
-					<u-grid-item>
+					<u-grid-item @click="goPay(5000)">
 						<view class="totalFee">充50元</view>
 						<view class="totalTime">144小时</view>
 					</u-grid-item>
-					<u-grid-item>
+					<u-grid-item @click="goPay(10000)">
 						<view class="totalFee">充100元</view>
 						<view class="totalTime">312小时</view>
 					</u-grid-item>
