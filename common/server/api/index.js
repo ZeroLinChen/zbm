@@ -12,7 +12,9 @@ const api = {
 	changeStatus: (data) => http('listsFunctions', 'changeStatus', data),
 	sendMsg: (data) => http('listsFunctions', 'leaveMsg', data),
 	setTop: (data) => http('listsFunctions', 'setTop', data),
+	removeTop: (data) => http('listsFunctions', 'removeTop', data),
 	goPay: (data) => http('wxPay', '', data),
+	editZone: (data) => http('usersFunctions', 'editZone', data),
 }
 
 export default api;

@@ -5,7 +5,14 @@
 				<u-avatar :src="userInfo.zbm_avatarUrl" size="140"></u-avatar>
 			</view>
 			<view class="u-flex-1">
-				<view class="u-font-18 u-p-b-20">{{userInfo.zbm_nickName}}</view>
+				<view class="u-font-18 u-p-b-10">{{userInfo.zbm_nickName}}</view>
+				<view class="u-font-12">
+					<u-tag
+						:text="userInfo.zone ? `${userInfo.zone.province.label}${userInfo.zone.city.label}${userInfo.zone.area.label}${userInfo.zone.street && userInfo.zone.street.label}` : '点击此处完善地区信息'"
+						:type="userInfo.zone ? 'success' : 'error'"
+						@click="openZoneSelecter"
+					/>
+				</view>
 			</view>
 <!-- 			<view class="u-m-l-10 u-p-10">
 				<u-icon name="scan" color="#969799" size="28"></u-icon>
@@ -88,15 +95,22 @@
 				</u-grid>
 			</view>
 		</u-modal>
+		
+		<city-select v-model="userZone" title-text="请先完善个人地区信息" :defaultRegion="userInfo.zone || []" @city-change="cityChange"></city-select>
 	</view>
 </template>
 
 <script>
+	import citySelect from '../../components/u-city-select.vue';
+	
 	import tabbarSetting from '../../static/tabbarSetting';
 	import api from '../../common/server/api/index.js'
 	import { utils } from '../../common/utils.js'
 	
 	export default {
+		components: {
+			citySelect
+		},
 		data() {
 			return {
 				userInfo: {},
@@ -105,6 +119,7 @@
 				countFontColor: this.$u.color['primary'],
 				countStart: 0,
 				countEnd: 0,
+				userZone: false,
 			}
 		},
 		watch: {
@@ -140,7 +155,24 @@
 					if (res.success) {
 						this.loginPopup = false
 						this.userInfo = Object.assign({}, res.data.data)
+						this.userZone = !!!this.userInfo.zone
 						uni.setStorageSync('userInfo', res.data.data)
+					} else {
+						this.showToast("获取用户信息失败！", 'error')
+					}
+				}).catch(err => {
+					this.showToast("获取用户信息失败！", 'error')
+					this.loginPopup = true
+				})
+			},
+			openZoneSelecter() {
+				this.userZone = true;
+			},
+			cityChange(zoneData) {
+				api.editZone(zoneData).then(res => {
+					if (res.success) {
+						this.userInfo = Object.assign(this.userInfo, {zone: zoneData})
+						this.$forceUpdate()
 					} else {
 						this.showToast("获取用户信息失败！", 'error')
 					}
@@ -180,7 +212,13 @@
 						this.showModal = false;
 					})
 				})
-			}
+			},
+			showToast(msg, type, back = false, url = '') {
+				this.$refs.uToast.show({
+					title: msg,
+					type: type,
+				})
+			},
 		}
 	}
 </script>

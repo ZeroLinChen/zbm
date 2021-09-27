@@ -32,7 +32,7 @@
 			<view class="bottom-tips">编辑前需下架宝贝</view>
 			<view class="buttom-group">
 				<!-- 置顶 操作按钮 -->
-				<u-button v-if="info.setTop" :ripple="true" ripple-bg-color="#909399" type="success" size="medium" @click="setTop(-1)">取消置顶</u-button>
+				<u-button v-if="info.setTop" :ripple="true" ripple-bg-color="#909399" type="success" size="medium" @click="removeTop()">取消置顶</u-button>
 				<u-button v-else :ripple="true" ripple-bg-color="#909399" type="primary" size="medium" @click="setTopBox = true" :disabled="userInfo.setTopTime === 0">置顶</u-button>
 				<!-- 置顶 操作按钮 end-->
 				<!-- 下架or编辑 操作按钮 -->
@@ -179,6 +179,19 @@
 			}
 		},
 		methods: {
+			createUser() {
+				api.createUser().then(res => {
+					if (res.success) {
+						this.userInfo = Object.assign({}, res.data.data)
+						uni.setStorageSync('userInfo', res.data.data)
+					} else {
+						this.showToast("获取用户信息失败！", 'error')
+					}
+				}).catch(err => {
+					this.showToast("获取用户信息失败！", 'error')
+					this.loginPopup = true
+				})
+			},
 			getListDetail(id) {
 				this.showLoading = true
 				api.getListDetail(id)
@@ -340,18 +353,40 @@
 			isReply(item) {
 				return typeof item.replyIndex !== 'string'
 			},
-			setTop(setTopTime) {
+			async setTop(setTopTime) {
+				this.showLoading = true
 				api.setTop({
-					userId: this.info.creatorId,
 					id: this.id,
 					setTopTime,
-				}).then(res => {
-						this.userInfo.setTopTime -= setTopTime
-						this.$u.toast('置顶成功，您的宝贝现在会在首页列表前排展示');
-					})
-					.catch(err => {
-						this.$u.toast(err);
-					})
+				})
+				.then(res => {
+					this.userInfo.setTopTime -= setTopTime;
+					this.info.setTop = true;
+					this.$u.toast('置顶成功，您的宝贝现在会在首页列表前排展示');
+				})
+				.catch(err => {
+					this.$u.toast(err);
+				})
+				.finally(() => {
+					this.showLoading = false;
+				})
+			},
+			async removeTop() {
+				this.showLoading = true
+				api.removeTop({
+					id: this.id,
+				})
+				.then(res => {
+					this.createUser()
+					this.info.setTop = false;
+					this.$u.toast('取消置顶成功');
+				})
+				.catch(err => {
+					this.$u.toast(err.errMsg);
+				})
+				.finally(() => {
+					this.showLoading = false;
+				})
 			}
 		}
 	}

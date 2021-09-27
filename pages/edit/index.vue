@@ -267,6 +267,10 @@
 			},
 			createList(data, cloudID) { // 上传接口
 				data = { ...data }
+				
+				data.id = data._id; // 云开发接口不允许存在_id字段
+				delete data._id;
+				
 				this.showLoading = true;
 				delete data.classText
 				delete data.agreement

@@ -8,6 +8,7 @@
 		<view class="wrap">
 			<view class="lists-box">
 				<view class="demo-warter" v-for="(item, index) in flowList" :key="index" @click="showDetail(item._id)">
+					<u-tag class="u-tag" v-if="item.setTop" text="置 顶" mode="dark" />
 					<u-lazy-load threshold="-450" height="300" loading-img="/static/img/bitmap.png" img-mode="aspectFill" border-radius="10" :image="imgList[index]" :index="index"></u-lazy-load>
 					<view class="demo-title">{{ item.title }}</view>
 					<view class="demo-price">{{ item.discontCost }}元</view>
@@ -79,6 +80,8 @@
 			this.skipNumber -= this.skipStep;
 			// console.log(this.skipNumber)
 			this.getClasses();
+		},
+		onShow() {
 			this.getLists();
 		},
 		onReachBottom() {
@@ -201,6 +204,13 @@
 		padding: 8rpx;
 		position: relative;
 		box-sizing: border-box;
+		
+		.u-tag {
+			position: absolute;
+			top: 10rpx;
+			left: 10rpx;
+			z-index: 10;
+		}
 	}
 	
 	.u-close {

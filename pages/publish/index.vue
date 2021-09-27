@@ -280,8 +280,11 @@
 							discontCost: 0,
 							wx_account: ''
 						}
+						this.photo = [];
+						this.photoList = [];
+						this.$refs.uUpload.clear();
 					} else {
-						his.showToast(res.errorMsg, 'error')
+						this.showToast(res.errorMsg, 'error')
 					}
 				}).catch((e) => {
 					this.showLoading = false;

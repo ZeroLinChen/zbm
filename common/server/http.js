@@ -16,7 +16,7 @@ function http(api, method, data = {}, cloudID) {
 					cloudData: cloudID ? cloudID : '',
 				},
 			}).then((resp) => {
-				if (resp.result.success) {
+				if (resp.result.success || resp.result.returnCode === 'SUCCESS') {
 					res(resp.result)
 				} else {
 					rej(resp.result.errMsg)
