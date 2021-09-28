@@ -18,6 +18,12 @@
 					<u-radio shape="square" v-for="(item, index) in tradeTypeList" :key="index" :name="item.value">{{ item.name }}</u-radio>
 				</u-radio-group>
 			</u-form-item>
+			<u-form-item v-show="model.tradeType === 0 || model.tradeType === 2" label="交接地区" prop="intro" label-width="150">
+				<u-input placeholder="请输入你的宝贝所在的地区" v-model="zongStringify" disabled @click="zoneSelecter = true" />
+			</u-form-item>
+			<u-form-item v-show="model.tradeType === 0 || model.tradeType === 2" label="详细地址" prop="intro" label-width="150">
+				<u-input placeholder="请输入你的宝贝所在的详细地址" v-model="model.detailAddr" />
+			</u-form-item>
 			<u-form-item label="原价" prop="originalCost" label-width="150">
 				<u-input placeholder="请输入物品原价" v-model="model.originalCost" type="text"></u-input>
 			</u-form-item>
@@ -88,6 +94,8 @@
 		
 		<u-select mode="single-column" :list="selectList" v-model="selectShow" @confirm="selectConfirm"></u-select>
 		
+		<city-select v-model="zoneSelecter" title-text="请选择宝贝所在地区" @city-change="cityChange"></city-select>
+		
 		<u-tabbar :list="tabbar" :mid-button="true"></u-tabbar>
 		
 		<u-mask :show="showLoading" :mask-click-able="false">
@@ -103,11 +111,16 @@
 </template>
 
 <script>
+	import citySelect from '../../components/u-city-select.vue';
+	
 	import tabbarSetting from '../../static/tabbarSetting';
 	import api from '../../common/server/api/index.js'
 	import { utils } from '../../common/utils.js'
 	
 	export default {
+		components: {
+			citySelect
+		},
 		data() {
 			return {
 				model: {
@@ -120,13 +133,15 @@
 					classText: '',
 					originalCost: 0,
 					discontCost: 0,
-					wx_account: ''
+					wx_account: '',
+					zone: '',
+					detailAddr: '',
 				},
 				photo: [],
 				photoList: [], // 缓存返回的临时图片地址
 				tradeTypeList: [
 					{
-						name: '自提',
+						name: '买家自提',
 						value: 0,
 						checked: true,
 						disabled: false
@@ -136,8 +151,15 @@
 						value: 1,
 						checked: false,
 						disabled: false
-					}
+					},
+					{
+						name: '卖家送货',
+						value: 2,
+						checked: false,
+						disabled: false
+					},
 				],
+				zoneSelecter: false,
 				selectList: [],
 				selectShow: false,
 				showAgreement: false,
@@ -197,6 +219,14 @@
 				tabbar: tabbarSetting,
 				showLoading: false,
 				uploadComplate: false,
+			}
+		},
+		computed: {
+			zongStringify() {
+				let data = this.model.zone
+				console.log(data)
+				if (!data) return '';
+				return `${data.province.label}${data.city.label}${data.area.label}${data.street && data.street.label}`
 			}
 		},
 		onLoad(option) {
@@ -324,6 +354,10 @@
 					type: type,
 				})
 			},
+			cityChange(data) {
+				this.model.zone = data
+				// this.model.zone = `${data.province.label}${data.city.label}${data.area.label}${data.street && data.street.label}`
+			}
 		}
 	}
 </script>

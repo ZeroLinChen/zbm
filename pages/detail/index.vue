@@ -2,7 +2,7 @@
 	<view class="content">
 		<view class="intor">
 			<view class="user-info">
-				<u-avatar :src="info.zbm_avatarUrl"></u-avatar>
+				<u-avatar :src="info.zbm_avatarUrl" @click="showDetail('myPost')"></u-avatar>
 				<view class="user-name">
 					<view class="">{{ info.zbm_nickName }}</view>
 					<view class="time">{{ $u.timeFrom(new Date(info.last_modify_time), 'yyyy年mm月dd日 hh时MM分') }}</view>
@@ -20,6 +20,11 @@
 			<view class="flag">¥ </view>
 			<view class="cosnt">{{info.discontCost}}</view>
 			<u-tag class="tag" :text="transfTradeType(info.tradeType) || ''" type="error" size="mini" />
+			<u-tag
+				v-if="info.zone"
+				style="margin-left: auto;"
+				:text="`${info.zone.province.label}${info.zone.city.label}${info.zone.area.label}${info.zone.street && info.zone.street.label}`"
+			/>
 		</view>
 		
 		<view class="main">
@@ -387,7 +392,12 @@
 				.finally(() => {
 					this.showLoading = false;
 				})
-			}
+			},
+			showDetail(page) {
+				uni.navigateTo({
+					url: `../${page}/index?userId=${this.info.creatorId}&name=${this.info.zbm_nickName}`,
+				})
+			},
 		}
 	}
 </script>

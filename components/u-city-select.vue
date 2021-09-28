@@ -35,7 +35,7 @@
 						<scroll-view :scroll-y="true" style="height: 100%">
 							<u-cell-group v-if="isChooseC">
 								<u-cell-item v-for="(item,index) in areas" :title="item.label" :arrow="false" :index="index" :key="index"
-								 @click="areaChange">
+								 @click="areaChange(index, item)">
 									<u-icon v-if="isChooseA&&area===index" slot="right-icon" size="34" name="checkbox-mark"></u-icon>
 								</u-cell-item>
 							</u-cell-group>
@@ -64,7 +64,7 @@
 	import provinces from "uview-ui/libs/util/province.js";
 	import citys from "uview-ui/libs/util/city.js";
 	import areas from "uview-ui/libs/util/area.js";
-	import streets from "uview-ui/libs/util/street.js";
+	import api from '../common/server/api/index.js'
 	/**
 	 * city-select 省市区级联选择器
 	 * @property {String Number} z-index 弹出时的z-index值（默认1075）
@@ -123,7 +123,7 @@
 				areas: areas[0][0],
 				isChooseS: false, //是否已经选择了街道
 				street: 0, //区级下标
-				streets: streets[0][0][0],
+				streets: [],
 				tabsIndex: 0,
 			}
 		},
@@ -198,7 +198,7 @@
 			setArea(label = "", value = "") {
 				this.areas.map((v, k) => {
 					if (value ? v.value == value : v.label == label) {
-						this.areaChange(k);
+						this.areaChange(k, v);
 					}
 				})
 			},
@@ -234,11 +234,12 @@
 				this.areas = areas[this.province][index];
 				this.tabsIndex = 2;
 			},
-			areaChange(index) {
+			async areaChange(index, area) {
 				this.isChooseA = true;
 				this.isChooseS = false;
 				this.area = index;
-				this.streets = streets[this.province][this.city][index];
+				this.streets = await this.getStreets({area: area.value});
+				console.log(this.streets)
 				this.tabsIndex = 3;
 			},
 			streetChange(index) {
@@ -251,6 +252,24 @@
 				result.street = this.streets[this.street];
 				this.$emit('city-change', result);
 				this.close();
+			},
+			getStreets(data) {
+				return new Promise((resolve, reject) => {
+					api.getStreets(data).then(res => {
+						if (res.success) {
+							resolve(res.data.data.children.map(item => {
+								return {
+									value: item.code,
+									label: item.name
+								}
+							}))
+						} else {
+							reject("获取街道信息失败！")
+						}
+					}).catch(err => {
+						reject("获取街道信息失败！")
+					})
+				})
 			}
 		}
 

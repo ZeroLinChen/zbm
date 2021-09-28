@@ -15,6 +15,7 @@ const api = {
 	removeTop: (data) => http('listsFunctions', 'removeTop', data),
 	goPay: (data) => http('wxPay', '', data),
 	editZone: (data) => http('usersFunctions', 'editZone', data),
+	getStreets: (data) => http('getStreet', '', data),
 }
 
 export default api;

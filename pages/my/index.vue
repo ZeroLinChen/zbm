@@ -97,6 +97,12 @@
 		</u-modal>
 		
 		<city-select v-model="userZone" title-text="请先完善个人地区信息" :defaultRegion="userInfo.zone || []" @city-change="cityChange"></city-select>
+		
+		<u-mask :show="showLoading" :mask-click-able="false">
+			<view class="flex-center">
+				<u-loading :show="true"></u-loading>
+			</view>
+		</u-mask>
 	</view>
 </template>
 
@@ -120,6 +126,7 @@
 				countStart: 0,
 				countEnd: 0,
 				userZone: false,
+				showLoading: false,
 			}
 		},
 		watch: {
@@ -151,6 +158,7 @@
 				})
 			},
 			createUser(data) {
+				this.showLoading = true;
 				api.createUser(data).then(res => {
 					if (res.success) {
 						this.loginPopup = false
@@ -163,6 +171,8 @@
 				}).catch(err => {
 					this.showToast("获取用户信息失败！", 'error')
 					this.loginPopup = true
+				}).finally(() => {
+					this.showLoading = false
 				})
 			},
 			openZoneSelecter() {
@@ -263,6 +273,13 @@ u-button {
 	padding-top: 10rpx;
 	font-size: 24rpx;
 	color: $u-type-warning;
+}
+
+.flex-center{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
 }
 </style>
 <style>

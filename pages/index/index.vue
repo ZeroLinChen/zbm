@@ -11,7 +11,9 @@
 					<u-tag class="u-tag" v-if="item.setTop" text="置 顶" mode="dark" />
 					<u-lazy-load threshold="-450" height="300" loading-img="/static/img/bitmap.png" img-mode="aspectFill" border-radius="10" :image="imgList[index]" :index="index"></u-lazy-load>
 					<view class="demo-title">{{ item.title }}</view>
-					<view class="demo-price">{{ item.discontCost }}元</view>
+					<view class="demo-price">
+						{{ item.discontCost }}元
+					</view>
 <!-- 					<view class="demo-tag">
 						<view class="demo-tag-owner">自营</view>
 						<view class="demo-tag-text">放心购</view>
@@ -24,6 +26,12 @@
 							bgColor='#fcbd71'
 						></u-avatar>
 						<view class="shop-name">{{ item.zbm_nickName }}</view>
+						<u-tag
+							v-if="item.zone"
+							style="margin-left: auto;"
+							size="mini"
+							:text="`${item.zone.area.label}${item.zone.street && item.zone.street.label}`"
+						/>
 					</view>
 					<!-- <view class="u-close">
 						<u-icon name="close-circle-fill" color="#fa3534" size="34" @click="remove(item.id)"></u-icon>

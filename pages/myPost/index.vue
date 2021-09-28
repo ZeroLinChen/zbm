@@ -47,12 +47,23 @@
 				loadStatus: 'loadmore',
 				flowList: [],
 				imgList: [], // 微信小程序云开发不能直接获取图片，需要额外数组保存
+				option: {},
 			}
 		},
-		onLoad() {
-			this.userInfo = uni.getStorageSync('userInfo')
+		onLoad(option) {
+			this.option = option
+			if (option.userId) {
+				this.userInfo._id = option.userId
+			} else {
+				this.userInfo = uni.getStorageSync('userInfo')
+			}
 			this.skipNumber -= this.skipStep // 初始化分页字段
 			this.getLists({creatorId: this.userInfo._id, status: -1})
+		},
+		onReady() {
+			uni.setNavigationBarTitle({
+			    title: `${this.option.name}的发布`
+			});
 		},
 		onReachBottom() {
 			if (this.loadStatus === 'nomore') return
