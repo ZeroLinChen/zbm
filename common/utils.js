@@ -64,11 +64,28 @@ export default class Utils {
 		if (num === 1) {
 			return '邮寄'
 		}
+		
+		if (num === 2) {
+			return '送货'
+		}
 	}
 	
 	transfStatus(num) {
 		const dict = ['关闭', '上架', '下架']
 		return dict[num]
+	}
+	
+	// 判断是否空对象
+	isNullObj(obj) {
+		if (typeof obj !== 'object') {
+			throw new Error('参数不是对象')
+		}
+		
+		if (Object.keys(obj).length === 0) {
+			return true
+		} else {
+			return false
+		}
 	}
 }
 

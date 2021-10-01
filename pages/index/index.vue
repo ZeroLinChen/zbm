@@ -3,7 +3,13 @@
 		<u-sticky bgColor="#f2f2f2">
 			<u-search v-model="value" @search="search" :clearabled="true" :show-action="false" shape="0"></u-search>
 			<!-- <u-subsection :bold="true" :active-color="subActiveColor" :list="classList" :borderRadius="0" @change="subChange"></u-subsection> -->
-			<u-tabs ref="tabs" :current="currentTab" :list="classList"  @change="tabChange"></u-tabs>
+			<view class="flex">
+				<u-tabs class="u-tabs" ref="tabs" :current="currentTab" :list="classList"  @change="tabChange"></u-tabs>
+				<u-line class="u-line" color="gray" direction="col" length="44" />
+				<u-dropdown class="u-dropdown" :height="88" :border-radius="8" title-size="12px">
+					<u-dropdown-item v-model="zone" :title="zone ? zoneList.find(item => item.value === zone).label : '区域选择'" :options="zoneList" @change="getLists({})"></u-dropdown-item>
+				</u-dropdown>
+			</view>
 		</u-sticky>
 		<view class="wrap">
 			<view class="lists-box">
@@ -27,7 +33,7 @@
 						></u-avatar>
 						<view class="shop-name">{{ item.zbm_nickName }}</view>
 						<u-tag
-							v-if="item.zone"
+							v-if="!utils.isNullObj(item.zone)"
 							style="margin-left: auto;"
 							size="mini"
 							:text="`${item.zone.area.label}${item.zone.street && item.zone.street.label}`"
@@ -61,6 +67,7 @@
 	export default {
 		data() {
 			return {
+				utils: utils,
 				skipStep: 10,
 				skipNumber: 0,
 				loadStatus: 'loadmore',
@@ -76,6 +83,41 @@
 				},
 				userInfo: {},
 				loginPopup: false,
+				zoneList: [
+					{
+						label: '全部',
+						value: '',
+					},
+					{
+						label: '沙琅镇',
+						value: '440904117',
+					},
+					{
+						label: '观珠镇',
+						value: '440904116',
+					},
+					{
+						label: '那霍镇',
+						value: '440904121',
+					},
+					{
+						label: '望夫镇',
+						value: '440904119',
+					},
+					{
+						label: '罗坑镇',
+						value: '440904120',
+					},
+					{
+						label: '黄岭镇',
+						value: '440904118',
+					},
+					{
+						label: '霞洞镇',
+						value: '440904115',
+					},
+				],
+				zone: ''
 			};
 		},
 		onLoad() {
@@ -121,6 +163,11 @@
 			
 				this.skipNumber = this.skipNumber + this.skipStep;
 				Object.assign(data, { skip: this.skipNumber})
+				
+				if (this.zone) {
+					Object.assign(data, { zone: this.zone})
+				}
+				
 				api.getLists(data).then((res) => {
 					this.flowList.push(...res.data.data);
 					this.getImg(res.data.data.map(item => item.firstImg)).then(imgList => {
@@ -192,6 +239,39 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+	}
+	
+	.flex {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: #FFFFFF;
+		
+		.u-tabs {
+			width: calc(100vw - 180rpx);
+		}
+		
+		.u-line {
+			flex: unset;
+			padding-left: 20rpx;
+		}
+		
+		.u-dropdown {
+			width: 160rpx;
+			padding-bottom: 6rpx;
+			
+			/deep/ .u-dropdown__content__mask, /deep/ .uicon-checkbox-mark {
+				display: none;
+			}
+			
+			/deep/ .u-dropdown__menu__item__text {
+				color: $u-type-primary!important;
+			}
+			
+			/deep/ .u-cell_title {
+				font-size: 24rpx;
+			}
+		}
 	}
 	
 	.wrap {

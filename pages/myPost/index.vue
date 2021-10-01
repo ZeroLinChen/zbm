@@ -61,9 +61,11 @@
 			this.getLists({creatorId: this.userInfo._id, status: -1})
 		},
 		onReady() {
-			uni.setNavigationBarTitle({
-			    title: `${this.option.name}的发布`
-			});
+			if (this.option.name) {
+				uni.setNavigationBarTitle({
+				    title: `${this.option.name}的发布`
+				});
+			}
 		},
 		onReachBottom() {
 			if (this.loadStatus === 'nomore') return

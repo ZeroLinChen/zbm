@@ -19,9 +19,6 @@
 					<u-radio shape="square" v-for="(item, index) in tradeTypeList" :key="index" :name="item.value">{{ item.name }}</u-radio>
 				</u-radio-group>
 			</u-form-item>
-			<u-form-item label="宝贝所在地" prop="location" label-width="150">
-				<u-input placeholder="请输入宝贝所在地" v-model="model.location" type="text"></u-input>
-			</u-form-item>
 			<u-form-item v-show="model.tradeType === 0 || model.tradeType === 2" label="交接地区" prop="intro" label-width="150">
 				<u-input placeholder="请输入你的宝贝所在的地区" v-model="zongStringify" disabled @click="zoneSelecter = true" />
 			</u-form-item>
@@ -127,6 +124,7 @@
 		},
 		data() {
 			return {
+				utils: utils,
 				model: {
 					photo: [],
 					title: '',
@@ -138,7 +136,7 @@
 					originalCost: 0,
 					discontCost: 0,
 					wx_account: '',
-					zone: '',
+					zone: {},
 					detailAddr: '',
 				},
 				photo: [],
@@ -230,7 +228,7 @@
 			zongStringify() {
 				let data = this.model.zone
 				console.log(data)
-				if (!data) return '';
+				if (!data || this.utils.isNullObj(data)) return '';
 				return `${data.province.label}${data.city.label}${data.area.label}${data.street && data.street.label}`
 			}
 		},
@@ -299,14 +297,17 @@
 				})
 			},
 			createList(data, cloudID) { // 上传接口
-				data = { ...data }
+				if (data.tradeType === 1) {
+					data.zone = {}
+				}
+				
+				let { province, city, area, street } = data.zone
+				data = { street: street ? street.value : '', ...data } // 冗余street字段，方便列表区域筛选，应转后端接口处理，后面整改
 				
 				data.id = data._id; // 云开发接口不允许存在_id字段
 				delete data._id;
 				
 				this.showLoading = true;
-				delete data.classText
-				delete data.agreement
 				api.createList(data, cloudID).then((res) => {
 					this.showLoading = false;
 					if (res.success) {
@@ -357,7 +358,7 @@
 			cityChange(data) {
 				this.model.zone = data
 				// this.model.zone = `${data.province.label}${data.city.label}${data.area.label}${data.street && data.street.label}`
-			}
+			},
 		}
 	}
 </script>

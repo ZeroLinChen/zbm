@@ -33,9 +33,9 @@
 				<!-- <u-cell-item icon="star" title="收藏"></u-cell-item>
 				<u-cell-item icon="photo" title="相册"></u-cell-item>
 				<u-cell-item icon="coupon" title="卡券"></u-cell-item> -->
-				<u-cell-item icon="plus" title="发布" @click="showDetail('myPost')"></u-cell-item>
-				<u-cell-item icon="heart" title="关注" @click="showDetail('myFollow')"></u-cell-item>
-				<u-cell-item icon="bell" title="置顶">
+				<u-cell-item icon="plus" title="我的发布" @click="showDetail('myPost')"></u-cell-item>
+				<u-cell-item icon="heart" title="我的关注" @click="showDetail('myFollow')"></u-cell-item>
+				<u-cell-item icon="bell" title="置顶时长">
 					可用时长: 
 					<span class="setTopTime">
 						<u-count-to 
@@ -78,19 +78,19 @@
 				<u-grid :col="2">
 					<u-grid-item @click="goPay(100)">
 						<view class="totalFee">充1元</view>
-						<view class="totalTime">2小时</view>
+						<view class="totalTime">120分钟(2小时)</view>
 					</u-grid-item>
 					<u-grid-item @click="goPay(1000)">
 						<view class="totalFee">充10元</view>
-						<view class="totalTime">24小时</view>
+						<view class="totalTime">1440分钟(24小时)</view>
 					</u-grid-item>
 					<u-grid-item @click="goPay(5000)">
 						<view class="totalFee">充50元</view>
-						<view class="totalTime">144小时</view>
+						<view class="totalTime">8640分钟(144小时)</view>
 					</u-grid-item>
 					<u-grid-item @click="goPay(10000)">
 						<view class="totalFee">充100元</view>
-						<view class="totalTime">312小时</view>
+						<view class="totalTime">18720分钟(312小时)</view>
 					</u-grid-item>
 				</u-grid>
 			</view>
@@ -98,7 +98,7 @@
 		
 		<city-select v-model="userZone" title-text="请先完善个人地区信息" :defaultRegion="userInfo.zone || []" @city-change="cityChange"></city-select>
 		
-		<u-mask :show="showLoading" :mask-click-able="false">
+		<u-mask :show="showLoading" :mask-click-able="false" z-index="99999">
 			<view class="flex-center">
 				<u-loading :show="true"></u-loading>
 			</view>
@@ -200,6 +200,7 @@
 				this.showModal = true;
 			},
 			goPay(totalFee) {
+				this.showLoading = true
 				api.goPay({
 					body: `购买置顶时长${totalFee/100}元`,
 					totalFee
@@ -220,6 +221,7 @@
 					})
 					.finally(() => {
 						this.showModal = false;
+						this.showLoading = false;
 					})
 				})
 			},

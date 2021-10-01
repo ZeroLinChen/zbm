@@ -28,33 +28,35 @@
 		</view>
 		
 		<view class="main">
-			{{info.intro}}
-			
+			<text>{{info.intro}}</text>
+			<u-gap height="80" />
 			<u-image v-for="(item, index) in photoList" :src="item" :key="index" width="100%" mode="widthFix"></u-image>
 		</view>
 		
-		<view class="bottomArea flex-end" v-if="isCreator">
-			<view class="bottom-tips">编辑前需下架宝贝</view>
-			<view class="buttom-group">
-				<!-- 置顶 操作按钮 -->
-				<u-button v-if="info.setTop" :ripple="true" ripple-bg-color="#909399" type="success" size="medium" @click="removeTop()">取消置顶</u-button>
-				<u-button v-else :ripple="true" ripple-bg-color="#909399" type="primary" size="medium" @click="setTopBox = true" :disabled="userInfo.setTopTime === 0">置顶</u-button>
-				<!-- 置顶 操作按钮 end-->
-				<!-- 下架or编辑 操作按钮 -->
-				<u-button v-if="status === 1" :ripple="true" ripple-bg-color="#909399" type="success" size="medium" @click="changeStatus(id, 2)">下架</u-button>
-				<u-button v-else-if="status === 2" :ripple="true" ripple-bg-color="#909399" type="primary" size="medium" @click="edit">编辑</u-button>
-				<!-- 下架or编辑 操作按钮 end-->
-				<u-button :ripple="true" ripple-bg-color="#909399" type="error" size="medium" @click="changeStatus(id, 0)">关闭</u-button>
+		<template v-if="status !== 0">
+			<view class="bottomArea flex-end" v-if="isCreator">
+				<view class="bottom-tips">编辑前需下架宝贝</view>
+				<view class="buttom-group">
+					<!-- 置顶 操作按钮 -->
+					<u-button v-if="info.setTop" :ripple="true" ripple-bg-color="#909399" type="success" size="medium" @click="removeTop()">取消置顶</u-button>
+					<u-button v-else :ripple="true" ripple-bg-color="#909399" type="primary" size="medium" @click="setTopBox = true" :disabled="userInfo.setTopTime === 0">置顶</u-button>
+					<!-- 置顶 操作按钮 end-->
+					<!-- 下架or编辑 操作按钮 -->
+					<u-button v-if="status === 1" :ripple="true" ripple-bg-color="#909399" type="success" size="medium" @click="changeStatus(id, 2)">下架</u-button>
+					<u-button v-else-if="status === 2" :ripple="true" ripple-bg-color="#909399" type="primary" size="medium" @click="edit">编辑</u-button>
+					<!-- 下架or编辑 操作按钮 end-->
+					<u-button :ripple="true" ripple-bg-color="#909399" type="error" size="medium" @click="changeStatus(id, 0)">关闭</u-button>
+				</view>
 			</view>
-		</view>
-		<view class="bottomArea" v-else>
-			<u-icon v-show="isFollow" name="heart-fill" color="#dd6161" size="48" @click="removeFollow(id)"></u-icon>
-			<u-icon v-show="!isFollow" name="heart" :color="$u.color['info']" size="48" @click="addFollow(id)"></u-icon>
-			<view class="buttom-group">
-				<u-button :ripple="true" ripple-bg-color="#909399" type="primary" size="medium" @click="copyPhone(info.wx_account, 'wx_account')">复制微信号</u-button>
-				<u-button :ripple="true" ripple-bg-color="#909399" type="primary" size="medium" @click="copyPhone(info.zbm_phoneNumber, 'phone')">复制微信手机号</u-button>
+			<view class="bottomArea" v-else>
+				<u-icon v-show="isFollow" name="heart-fill" color="#dd6161" size="48" @click="removeFollow(id)"></u-icon>
+				<u-icon v-show="!isFollow" name="heart" :color="$u.color['info']" size="48" @click="addFollow(id)"></u-icon>
+				<view class="buttom-group">
+					<u-button :ripple="true" ripple-bg-color="#909399" type="primary" size="medium" @click="copyPhone(info.wx_account, 'wx_account')">复制微信号</u-button>
+					<u-button :ripple="true" ripple-bg-color="#909399" type="primary" size="medium" @click="copyPhone(info.zbm_phoneNumber, 'phone')">复制微信手机号</u-button>
+				</view>
 			</view>
-		</view>
+		</template>
 		
 		<u-modal v-model="copyComplate" :show-title="false">
 			<view class="tips">
@@ -69,7 +71,7 @@
 			</view>
 		</u-mask>
 		
-		<view class="msg-box">
+		<view class="msg-box" v-if="status === 1">
 			<u-gap height="10" bg-color="#fafafa"></u-gap>
 			<view class="title">
 				<u-icon name="chat" size="56" margin-left="15" label="消息"></u-icon>
@@ -201,6 +203,7 @@
 				this.showLoading = true
 				api.getListDetail(id)
 					.then(async (res) => {
+						res.data.data.intro = this.replaceBrToTextarea(res.data.data.intro)
 						this.info = res.data.data
 						this.checkIsCreator(res.data.data.creatorId)
 						this.dealMsg(this.info.msg)
@@ -394,10 +397,24 @@
 				})
 			},
 			showDetail(page) {
-				uni.navigateTo({
-					url: `../${page}/index?userId=${this.info.creatorId}&name=${this.info.zbm_nickName}`,
-				})
+				if (this.isCreator) {
+					uni.navigateTo({
+						url: `../${page}/index`,
+					})
+				} else {
+					uni.navigateTo({
+						url: `../${page}/index?userId=${this.info.creatorId}&name=${this.info.zbm_nickName}`,
+					})
+				}
+				
 			},
+			replaceBrToTextarea(str){
+				const reg=new RegExp("＜br＞","g");
+				
+				str = str.replace(reg,"/n");
+				
+				return str;
+			}
 		}
 	}
 </script>
