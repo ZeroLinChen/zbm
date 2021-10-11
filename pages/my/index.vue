@@ -63,12 +63,6 @@
 		
 		<u-toast ref="uToast" />
 		
-		<u-popup v-model="loginPopup" :safe-area-inset-bottom="true" :mask-close-able="false" :border-radius="10" mode="bottom">
-			<view class="loginBtn">
-				<u-button type="primary" @click="getUserInfo">登录周边卖</u-button>
-			</view>
-		</u-popup>
-		
 		<u-modal v-model="showModal" :show-title="false" :negative-top="300" confirm-text="取消">
 			<view class="rechargeOption">
 				<view class="remaining">
@@ -103,10 +97,13 @@
 				<u-loading :show="true"></u-loading>
 			</view>
 		</u-mask>
+		
+		<login-component v-model="loginPopup" @login-call-back="createUser" @cancel="utils.backToIndex()"/>
 	</view>
 </template>
 
 <script>
+	import loginComponent from '../../components/loginComponent.vue'
 	import citySelect from '../../components/u-city-select.vue';
 	
 	import tabbarSetting from '../../static/tabbarSetting';
@@ -115,6 +112,7 @@
 	
 	export default {
 		components: {
+			loginComponent,
 			citySelect
 		},
 		data() {
@@ -127,6 +125,8 @@
 				countEnd: 0,
 				userZone: false,
 				showLoading: false,
+				loginPopup: false,
+				utils,
 			}
 		},
 		watch: {
@@ -141,22 +141,11 @@
 			if (id) {
 				this.createUser()
 			} else {
+				this.showToast('点击登录按钮使用完整功能', 'warning')
 				this.loginPopup = true
 			}
 		},
 		methods: {
-			getUserInfo() {
-				const that = this
-				wx.getUserProfile({
-				    desc: '用于完善会员资料', 
-				    success(res) {
-						that.createUser(res.userInfo)
-				    },
-				    fail() {
-						that.showToast("获取用户信息失败！", 'error')
-				    }
-				})
-			},
 			createUser(data) {
 				this.showLoading = true;
 				api.createUser(data).then(res => {

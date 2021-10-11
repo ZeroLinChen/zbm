@@ -1,5 +1,13 @@
 <template>
 	<view class="content">
+		<!-- 欢迎页 -->
+		<view class="welcome" v-if="welcome">
+			<view style="width: 100%; padding: 0 120rpx; margin-top: -50rpx;">
+				<p>欢迎来到</p>
+				<p style="text-align: right;">周边卖</p>
+			</view>
+		</view>
+		<!-- 欢迎页 end -->
 		<u-sticky bgColor="#f2f2f2">
 			<u-search v-model="value" @search="search" :clearabled="true" :show-action="false" shape="0"></u-search>
 			<!-- <u-subsection :bold="true" :active-color="subActiveColor" :list="classList" :borderRadius="0" @change="subChange"></u-subsection> -->
@@ -51,22 +59,24 @@
 		
 		<u-toast ref="uToast" />
 		
-		<u-popup v-model="loginPopup" :safe-area-inset-bottom="true" :mask-close-able="false" :border-radius="10" mode="bottom">
-			<view class="loginBtn">
-				<u-button type="primary" @click="getUserInfo">登录周边卖</u-button>
-			</view>
-		</u-popup>
+		<login-component v-model="loginPopup" @login-call-back="createUser" />
 	</view>
 </template>
 
 <script>
+	import loginComponent from '../../components/loginComponent.vue'
 	import tabbarSetting from '../../static/tabbarSetting';
 	import api from '../../common/server/api/index.js'
 	import { utils } from '../../common/utils.js'
 	
 	export default {
+		components: {
+			loginComponent,
+		},
 		data() {
 			return {
+				welcome: true,
+				fristInit: true, // 判断首次加载
 				utils: utils,
 				skipStep: 10,
 				skipNumber: 0,
@@ -120,19 +130,28 @@
 				zone: ''
 			};
 		},
-		onLoad() {
+		created() {
+			console.time('created')
+			this.getLists();
 			const id = uni.getStorageSync('userInfo')
 			if (id) {
 				this.createUser()
 			} else {
-				this.loginPopup = true
+				// this.loginPopup = true
 			}
 			this.skipNumber -= this.skipStep;
 			// console.log(this.skipNumber)
 			this.getClasses();
 		},
+		mounted() {
+			setTimeout(() => {
+				this.welcome = false;
+			}, 2300)
+		},
 		onShow() {
-			this.getLists();
+			console.time('show')
+			this.fristInit || this.getLists();
+			this.fristInit = false;
 		},
 		onReachBottom() {
 			if (this.loadStatus === 'nomore') return
@@ -146,7 +165,7 @@
 					const list = res.data.data.map(item => {return {name: item.label}});
 					getApp().globalData.classList = list;
 					this.classList = this.classList.concat(list);
-					console.log(this.classList)
+					// console.log(this.classList)
 				}).catch((e) => {
 					this.showToast(e, 'error')
 				})
@@ -167,7 +186,7 @@
 				if (this.zone) {
 					Object.assign(data, { zone: this.zone})
 				}
-				
+				console.time('api')
 				api.getLists(data).then((res) => {
 					this.flowList.push(...res.data.data);
 					this.getImg(res.data.data.map(item => item.firstImg)).then(imgList => {
@@ -177,6 +196,11 @@
 					(res.data.data.length === 0 || (res.data.data.length < this.skipStep)) 
 						? (this.loadStatus = 'nomore') 
 						: (this.loadStatus = 'loading');
+					console.timeEnd('inter')
+					console.timeEnd('app show')
+					console.timeEnd('created')
+					console.timeEnd('show')
+					console.timeEnd('api')
 				}).catch((e) => {
 					this.showToast(e, 'error')
 				})
@@ -199,21 +223,15 @@
 				this.getLists({ keyword: value, class: this.currentTab - 1});
 			},
 			showDetail(id) {
+				const userInfo = uni.getStorageSync('userInfo')
+				if (!userInfo) {
+					this.showToast('点击登录按钮使用完整功能', 'warning')
+					this.loginPopup = true
+					return
+				}
+				
 				uni.navigateTo({
 					url: `../detail/index?id=${id}`
-				})
-			},
-			getUserInfo() {
-				const that = this
-				wx.getUserProfile({
-				    desc: '用于完善会员资料', 
-				    success(res) {
-				        that.userInfo = res.userInfo,
-						that.createUser(that.userInfo)
-				    },
-				    fail() {
-						that.showToast("获取用户信息失败！", 'error')
-				    }
 				})
 			},
 			createUser(data) {
@@ -369,7 +387,56 @@
 		width: 750rpx;
 	}
 	
-	.loginBtn {
-		padding: 100rpx 120rpx;
+	.welcome {
+		position: fixed;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		background-image: linear-gradient(120deg, rgba($color: $u-type-primary, $alpha: 0) 0%, rgba($color: $u-type-primary, $alpha: 1) 100%);
+		background-color: #FFFFFF;
+		margin: 0;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		min-height: 100vh;
+		z-index: 10000;
+		
+		p {
+			font-family: Helvetica;
+			margin: 0;
+			padding: 0;
+			font-size: 96rpx;
+			color: #fff;
+			letter-spacing: -.6rpx;
+			font-weight: bolder;
+			
+			background-image: linear-gradient(75deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 33.33%, rgba(255, 255, 255, 0) 66.67%, rgba(255, 255, 255, 0) 100%);
+			background-size: 300% 100%;
+			background-position-x: 100%;
+			
+			background-clip: text;
+			color: transparent;
+			
+			// transition: 2s background-position-x ease-in-out;
+		}
+		
+		p:first-child {
+			animation: welcome 2s ease-in-out infinite alternate;
+			animation-fill-mode: forwards;
+		}
+		p:last-child {
+			animation: welcome 2s ease-in-out 1s;
+			animation-fill-mode: forwards;
+		}
+		
+		// p:hover {
+		// 	background-position-x: 0%;
+		// }
+	}
+	
+	@keyframes welcome {
+	  from {background-position-x: 100%;}
+	  to {background-position-x: 0%;}
 	}
 </style>

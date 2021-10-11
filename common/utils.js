@@ -87,6 +87,12 @@ export default class Utils {
 			return false
 		}
 	}
+	
+	backToIndex() {
+		uni.switchTab({
+			url: '../index/index',
+		})
+	}
 }
 
 export const utils = new Utils();

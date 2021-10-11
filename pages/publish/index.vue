@@ -107,10 +107,13 @@
 		<u-modal v-model="uploadComplate" :show-title="false" content="发布完成，返回首页" @confirm="uploadComplateFn"></u-modal>
 		
 		<u-toast ref="uToast" />
+		
+		<login-component v-model="loginPopup" @login-call-back="createUser" @cancel="utils.backToIndex()"/>
 	</view>
 </template>
 
 <script>
+	import loginComponent from '../../components/loginComponent.vue'
 	import citySelect from '../../components/u-city-select.vue';
 	
 	import tabbarSetting from '../../static/tabbarSetting';
@@ -119,6 +122,7 @@
 	
 	export default {
 		components: {
+			loginComponent,
 			citySelect
 		},
 		data() {
@@ -220,6 +224,8 @@
 				tabbar: tabbarSetting,
 				showLoading: false,
 				uploadComplate: false,
+				loginPopup: false,
+				utils,
 			}
 		},
 		computed: {
@@ -236,6 +242,14 @@
 			})
 			if (option.id) {
 				this.getListDetail(option)
+			}
+		},
+		onShow() {
+			const userInfo = uni.getStorageSync('userInfo')
+			if (!userInfo) {
+				this.showToast('点击登录按钮使用完整功能', 'warning')
+				this.loginPopup = true
+				return
 			}
 		},
 		onReady() {
@@ -314,7 +328,7 @@
 							originalCost: 0,
 							discontCost: 0,
 							wx_account: '',
-							zone: ''
+							zone: {},
 						}
 						this.photo = [];
 						this.photoList = [];
@@ -364,6 +378,19 @@
 				this.model.zone = data
 				// this.model.zone = `${data.province.label}${data.city.label}${data.area.label}${data.street && data.street.label}`
 			},
+			createUser(data) {
+				api.createUser(data).then(res => {
+					if (res.success) {
+						this.loginPopup = false
+						uni.setStorageSync('userInfo', res.data.data)
+					} else {
+						this.showToast("获取用户信息失败！", 'error')
+					}
+				}).catch(err => {
+					this.showToast("获取用户信息失败！", 'error')
+					this.loginPopup = true
+				})
+			}
 		}
 	}
 </script>

@@ -5,9 +5,11 @@
 			followList: [],
 		},
 		onLaunch: function() {
+			console.time('inter')
 			console.log('App Launch')
 		},
 		onShow: function() {
+			console.time('app show')
 			console.log('App Show')
 		},
 		onHide: function() {
